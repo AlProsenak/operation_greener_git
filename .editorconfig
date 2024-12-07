@@ -1,0 +1,12 @@
+# Documentation
+# https://editorconfig.org
+
+root = true
+
+[*.{groovy,java}]
+indent_style = tab
+indent_size = 4
+continuation_indent_size = 8
+trim_trailing_whitespace = true
+insert_final_newline = true
+end_of_line = lf
