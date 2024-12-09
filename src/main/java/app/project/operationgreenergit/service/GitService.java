@@ -36,9 +36,9 @@ public class GitService {
 		// Validate Git is installed.
 		try {
 			Process process = GIT_VERSION_PB.start();
+
 			InputStream inputStream = process.getInputStream();
 			BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-
 			StringBuilder sb = new StringBuilder();
 			String line;
 			while ((line = reader.readLine()) != null) {
@@ -55,7 +55,7 @@ public class GitService {
 			log.debug("Exited with code: " + exitCode + " process: " + GIT_VERSION_PB.command().toString());
 		} catch (IOException ex) {
 			log.error("Caught exception", ex);
-			throw new RuntimeException("Git is not installed", ex);
+			throw new RuntimeException("Program: '" + GIT_VERSION_PB.command().getFirst() + "' not found", ex);
 		} catch (InterruptedException ex) {
 			throw new RuntimeException("Process was interrupted", ex);
 		}
@@ -79,9 +79,31 @@ public class GitService {
 
 			int exitCode = process.waitFor();
 			log.debug("Exited with code: " + exitCode + " process: " + GIT_CLONE_PB.command().toString());
+
+			if (exitCode == 0) {
+				return;
+			}
+
+			InputStream errorInputStream = process.getErrorStream();
+			BufferedReader reader = new BufferedReader(new InputStreamReader(errorInputStream));
+			StringBuilder sb = new StringBuilder();
+			String line;
+			while ((line = reader.readLine()) != null) {
+				sb.append(line).append("\n");
+			}
+			reader.close();
+
+			String error = sb.toString();
+			log.error("Caught process: " + GIT_CLONE_PB.command().toString() + " error: '" + error + "'");
+			if (error.contains("Repository not found")) {
+				throw new RuntimeException("Repository: '" + REPO_URL + "' not found");
+			}
+			if (error.contains("already exists")) {
+				log.debug("Repository: '" + REPO_URL + "' is already cloned");
+			}
 		} catch (IOException ex) {
 			log.error("Caught exception", ex);
-			throw new RuntimeException("Could not clone repository", ex);
+			throw new RuntimeException("Program: '" + GIT_CLONE_PB.command().getFirst() + "' not found", ex);
 		} catch (InterruptedException ex) {
 			throw new RuntimeException("Process was interrupted", ex);
 		}
