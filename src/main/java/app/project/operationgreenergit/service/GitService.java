@@ -28,15 +28,25 @@ public class GitService {
 			InputStream inputStream = process.getInputStream();
 			BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
 
-			StringBuilder gitVersion = new StringBuilder();
+			StringBuilder sb = new StringBuilder();
 			String line;
 			while ((line = reader.readLine()) != null) {
-				gitVersion.append(line).append("\n");
+				sb.append(line).append("\n");
 			}
-			log.debug(gitVersion.toString());
+			reader.close();
+
+			String gitMessage = sb.toString().trim();
+			String[] gitParts = gitMessage.split("\\s+");
+			String gitVersion = gitParts[gitParts.length - 1];
+			log.debug("Installed Git version: " + gitVersion);
+
+			int exitCode = process.waitFor();
+			log.debug("Exited with code: " + exitCode + " process: " + GIT_VERSION_PB.command().toString());
 		} catch (IOException ex) {
 			log.error("Caught exception", ex);
-			throw new RuntimeException("Git is not installed");
+			throw new RuntimeException("Git is not installed", ex);
+		} catch (InterruptedException ex) {
+			throw new RuntimeException("Process was interrupted", ex);
 		}
 	}
 
