@@ -7,10 +7,14 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.file.Paths;
 
 @Slf4j
 @Service
 public class GitService {
+
+	private static final String REPO_NAME = "operation_greener_git";
+	private static final String REPO_URL = "https://github.com/AlProsenak/" + REPO_NAME + ".git";
 
 	private static final String USER_HOME = System.getProperty("user.home");
 	private static final String CACHE_DIR = USER_HOME + "/.cache";
@@ -18,6 +22,8 @@ public class GitService {
 	// Process builders
 	private static final ProcessBuilder GIT_VERSION_PB = new ProcessBuilder("git", "--version");
 	private static final ProcessBuilder CACHE_DIR_GEN_PB = new ProcessBuilder("mkdir", "-p", CACHE_DIR);
+	private static final ProcessBuilder GIT_CLONE_PB = new ProcessBuilder("git", "clone", REPO_URL)
+			.directory(Paths.get(CACHE_DIR).toFile());
 
 	public void generateCommitHistory() {
 		// Validate operating system.
@@ -63,6 +69,19 @@ public class GitService {
 		} catch (IOException ex) {
 			log.error("Caught exception", ex);
 			throw new RuntimeException("Could not initialize cache directory");
+		} catch (InterruptedException ex) {
+			throw new RuntimeException("Process was interrupted", ex);
+		}
+
+		// Clone project repository into cache.
+		try {
+			Process process = GIT_CLONE_PB.start();
+
+			int exitCode = process.waitFor();
+			log.debug("Exited with code: " + exitCode + " process: " + GIT_CLONE_PB.command().toString());
+		} catch (IOException ex) {
+			log.error("Caught exception", ex);
+			throw new RuntimeException("Could not clone repository", ex);
 		} catch (InterruptedException ex) {
 			throw new RuntimeException("Process was interrupted", ex);
 		}
