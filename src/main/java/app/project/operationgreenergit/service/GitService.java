@@ -12,7 +12,12 @@ import java.io.InputStreamReader;
 @Service
 public class GitService {
 
+	private static final String USER_HOME = System.getProperty("user.home");
+	private static final String CACHE_DIR = USER_HOME + "/.cache";
+
+	// Process builders
 	private static final ProcessBuilder GIT_VERSION_PB = new ProcessBuilder("git", "--version");
+	private static final ProcessBuilder CACHE_DIR_GEN_PB = new ProcessBuilder("mkdir", "-p", CACHE_DIR);
 
 	public void generateCommitHistory() {
 		// Validate operating system.
@@ -45,6 +50,19 @@ public class GitService {
 		} catch (IOException ex) {
 			log.error("Caught exception", ex);
 			throw new RuntimeException("Git is not installed", ex);
+		} catch (InterruptedException ex) {
+			throw new RuntimeException("Process was interrupted", ex);
+		}
+
+		// Initialize cache repository directory.
+		try {
+			Process process = CACHE_DIR_GEN_PB.start();
+
+			int exitCode = process.waitFor();
+			log.debug("Exited with code: " + exitCode + " process: " + CACHE_DIR_GEN_PB.command().toString());
+		} catch (IOException ex) {
+			log.error("Caught exception", ex);
+			throw new RuntimeException("Could not initialize cache directory");
 		} catch (InterruptedException ex) {
 			throw new RuntimeException("Process was interrupted", ex);
 		}
