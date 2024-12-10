@@ -13,13 +13,15 @@ import java.nio.file.Paths;
 @Service
 public class GitService {
 
+	// Repository
 	private static final String REPO_NAME = "operation_greener_git";
 	private static final String REPO_URL = "https://github.com/AlProsenak/" + REPO_NAME + ".git";
 
+	// Directory
 	private static final String USER_HOME = System.getProperty("user.home");
 	private static final String CACHE_DIR = USER_HOME + "/.cache";
 
-	// Process builders
+	// Process builder
 	private static final ProcessBuilder GIT_VERSION_PB = new ProcessBuilder("git", "--version");
 	private static final ProcessBuilder CACHE_DIR_GEN_PB = new ProcessBuilder("mkdir", "-p", CACHE_DIR);
 	private static final ProcessBuilder GIT_CLONE_PB = new ProcessBuilder("git", "clone", REPO_URL)
@@ -46,6 +48,8 @@ public class GitService {
 			}
 			reader.close();
 
+			// Trim last part of Git version output.
+			// Output example: 'git version 2.45.1'.
 			String gitMessage = sb.toString().trim();
 			String[] gitParts = gitMessage.split("\\s+");
 			String gitVersion = gitParts[gitParts.length - 1];
@@ -54,6 +58,8 @@ public class GitService {
 			int exitCode = process.waitFor();
 			log.debug("Exited with code: " + exitCode + " process: " + GIT_VERSION_PB.command().toString());
 		} catch (IOException ex) {
+			// Command 'git' is not found.
+			// Exception output example: 'Cannot run program "git": error=2, No such file or directory'.
 			log.error("Caught exception", ex);
 			throw new RuntimeException("Program: '" + GIT_VERSION_PB.command().getFirst() + "' not found", ex);
 		} catch (InterruptedException ex) {
@@ -90,6 +96,9 @@ public class GitService {
 				}
 				reader.close();
 
+				// Handle cloning repository errors.
+				// Error output example 1: 'ERROR: Repository not found.\nfatal: Could not read from remote repository.'
+				// Error output example 2: 'fatal: destination path 'REPOSITORY_NAME' already exists and is not an empty directory.'
 				String error = sb.toString();
 				log.error("Caught process: " + GIT_CLONE_PB.command().toString() + " error: '" + error + "'");
 				if (error.contains("Repository not found")) {
@@ -100,6 +109,8 @@ public class GitService {
 				}
 			}
 		} catch (IOException ex) {
+			// Command 'git' is not found.
+			// Exception output example: 'Cannot run program "git": error=2, No such file or directory'.
 			log.error("Caught exception", ex);
 			throw new RuntimeException("Program: '" + GIT_CLONE_PB.command().getFirst() + "' not found", ex);
 		} catch (InterruptedException ex) {
