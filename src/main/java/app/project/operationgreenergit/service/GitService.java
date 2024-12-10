@@ -80,26 +80,24 @@ public class GitService {
 			int exitCode = process.waitFor();
 			log.debug("Exited with code: " + exitCode + " process: " + GIT_CLONE_PB.command().toString());
 
-			if (exitCode == 0) {
-				return;
-			}
+			if (exitCode != 0) {
+				InputStream errorInputStream = process.getErrorStream();
+				BufferedReader reader = new BufferedReader(new InputStreamReader(errorInputStream));
+				StringBuilder sb = new StringBuilder();
+				String line;
+				while ((line = reader.readLine()) != null) {
+					sb.append(line).append("\n");
+				}
+				reader.close();
 
-			InputStream errorInputStream = process.getErrorStream();
-			BufferedReader reader = new BufferedReader(new InputStreamReader(errorInputStream));
-			StringBuilder sb = new StringBuilder();
-			String line;
-			while ((line = reader.readLine()) != null) {
-				sb.append(line).append("\n");
-			}
-			reader.close();
-
-			String error = sb.toString();
-			log.error("Caught process: " + GIT_CLONE_PB.command().toString() + " error: '" + error + "'");
-			if (error.contains("Repository not found")) {
-				throw new RuntimeException("Repository: '" + REPO_URL + "' not found");
-			}
-			if (error.contains("already exists")) {
-				log.debug("Repository: '" + REPO_URL + "' is already cloned");
+				String error = sb.toString();
+				log.error("Caught process: " + GIT_CLONE_PB.command().toString() + " error: '" + error + "'");
+				if (error.contains("Repository not found")) {
+					throw new RuntimeException("Repository: '" + REPO_URL + "' not found");
+				}
+				if (error.contains("already exists")) {
+					log.debug("Repository: '" + REPO_URL + "' is already cloned");
+				}
 			}
 		} catch (IOException ex) {
 			log.error("Caught exception", ex);
