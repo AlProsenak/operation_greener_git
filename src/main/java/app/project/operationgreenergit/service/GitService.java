@@ -4,6 +4,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -25,6 +28,9 @@ public class GitService {
 	private static final String USER_HOME = System.getProperty("user.home");
 	private static final String CACHE_DIR = USER_HOME + "/.cache";
 	private static final String REPO_DIR = CACHE_DIR + "/" + REPO_NAME;
+
+	// File
+	private static final File WORK_FILE = new File(REPO_DIR + "/GREENER_GIT.md");
 
 	// Process builder
 	private static final ProcessBuilder GIT_VERSION_PB = new ProcessBuilder("git", "--version");
@@ -137,6 +143,26 @@ public class GitService {
 		executeProcess(GIT_WORK_BRANCH_CREATE_PB);
 		executeProcess(GIT_WORK_BRANCH_SWITCH_PB);
 
+		// Create and write to dummy file.
+		try {
+			boolean isNewFile = false;
+			if (!WORK_FILE.exists()) {
+				isNewFile = WORK_FILE.createNewFile();
+			}
+
+			FileWriter fw = new FileWriter(WORK_FILE, true);
+			BufferedWriter bw = new BufferedWriter(fw);
+			if (isNewFile) {
+				bw.write("Begin operation Greener Git!");
+				bw.newLine();
+			}
+			bw.write("Sir Yes Sir!");
+			bw.newLine();
+			bw.close();
+		} catch (IOException ex) {
+			log.error("Caught exception", ex);
+			throw new RuntimeException("Failed to operate on file", ex);
+		}
 	}
 
 	private static void executeProcess(ProcessBuilder processBuilder) {
