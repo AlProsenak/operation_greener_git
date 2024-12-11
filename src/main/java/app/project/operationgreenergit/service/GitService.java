@@ -17,15 +17,29 @@ public class GitService {
 	private static final String REPO_NAME = "operation_greener_git";
 	private static final String REPO_URL = "https://github.com/AlProsenak/" + REPO_NAME + ".git";
 
+	// Branch
+	private static final String MAIN_BRANCH_NAME = "main";
+	private static final String WORK_BRANCH_NAME = "greener_git";
+
 	// Directory
 	private static final String USER_HOME = System.getProperty("user.home");
 	private static final String CACHE_DIR = USER_HOME + "/.cache";
+	private static final String REPO_DIR = CACHE_DIR + "/" + REPO_NAME;
 
 	// Process builder
 	private static final ProcessBuilder GIT_VERSION_PB = new ProcessBuilder("git", "--version");
 	private static final ProcessBuilder CACHE_DIR_GEN_PB = new ProcessBuilder("mkdir", "-p", CACHE_DIR);
 	private static final ProcessBuilder GIT_CLONE_PB = new ProcessBuilder("git", "clone", REPO_URL)
 			.directory(Paths.get(CACHE_DIR).toFile());
+
+	private static final ProcessBuilder GIT_MAIN_BRANCH_SWITCH_PB = new ProcessBuilder("git", "switch", MAIN_BRANCH_NAME)
+			.directory(Paths.get(REPO_DIR).toFile());
+	private static final ProcessBuilder GIT_WORK_BRANCH_CREATE_PB = new ProcessBuilder("git", "branch", WORK_BRANCH_NAME)
+			.directory(Paths.get(REPO_DIR).toFile());
+	private static final ProcessBuilder GIT_WORK_BRANCH_SWITCH_PB = new ProcessBuilder("git", "switch", WORK_BRANCH_NAME)
+			.directory(Paths.get(REPO_DIR).toFile());
+	private static final ProcessBuilder GIT_WORK_BRANCH_DELETE_PB = new ProcessBuilder("git", "branch", "-D", WORK_BRANCH_NAME)
+			.directory(Paths.get(REPO_DIR).toFile());
 
 	public void generateCommitHistory() {
 		// Validate operating system.
@@ -113,6 +127,30 @@ public class GitService {
 			// Exception output example: 'Cannot run program "git": error=2, No such file or directory'.
 			log.error("Caught exception", ex);
 			throw new RuntimeException("Program: '" + GIT_CLONE_PB.command().getFirst() + "' not found", ex);
+		} catch (InterruptedException ex) {
+			throw new RuntimeException("Process was interrupted", ex);
+		}
+
+		// Switch to clean Git branch.
+		try {
+			Process process1 = GIT_MAIN_BRANCH_SWITCH_PB.start();
+			int exitCode1 = process1.waitFor();
+			log.debug("Exited with code: " + exitCode1 + " process: " + GIT_MAIN_BRANCH_SWITCH_PB.command().toString());
+
+			Process process2 = GIT_WORK_BRANCH_DELETE_PB.start();
+			int exitCode2 = process2.waitFor();
+			log.debug("Exited with code: " + exitCode2 + " process: " + GIT_WORK_BRANCH_DELETE_PB.command().toString());
+
+			Process process3 = GIT_WORK_BRANCH_CREATE_PB.start();
+			int exitCode3 = process3.waitFor();
+			log.debug("Exited with code: " + exitCode3 + " process: " + GIT_WORK_BRANCH_CREATE_PB.command().toString());
+
+			Process process4 = GIT_WORK_BRANCH_SWITCH_PB.start();
+			int exitCode4 = process4.waitFor();
+			log.debug("Exited with code: " + exitCode4 + " process: " + GIT_WORK_BRANCH_SWITCH_PB.command().toString());
+		} catch (IOException ex) {
+			log.error("Caught exception", ex);
+			throw new RuntimeException("Program: '" + GIT_MAIN_BRANCH_SWITCH_PB.command().getFirst() + "' not found", ex);
 		} catch (InterruptedException ex) {
 			throw new RuntimeException("Process was interrupted", ex);
 		}
