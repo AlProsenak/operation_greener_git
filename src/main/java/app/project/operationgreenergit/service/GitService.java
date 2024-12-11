@@ -32,7 +32,7 @@ public class GitService {
 	private static final ProcessBuilder GIT_CLONE_PB = new ProcessBuilder("git", "clone", REPO_URL)
 			.directory(Paths.get(CACHE_DIR).toFile());
 
-	private static final ProcessBuilder GIT_MAIN_BRANCH_SWITCH_PB = new ProcessBuilder("git", "switch", MAIN_BRANCH_NAME)
+	private static final ProcessBuilder GIT_MAIN_BRANCH_SWITCH_PB = new ProcessBuilder("git", "switch", "-f", MAIN_BRANCH_NAME)
 			.directory(Paths.get(REPO_DIR).toFile());
 	private static final ProcessBuilder GIT_WORK_BRANCH_CREATE_PB = new ProcessBuilder("git", "branch", WORK_BRANCH_NAME)
 			.directory(Paths.get(REPO_DIR).toFile());
@@ -132,25 +132,21 @@ public class GitService {
 		}
 
 		// Switch to clean Git branch.
+		executeProcess(GIT_MAIN_BRANCH_SWITCH_PB);
+		executeProcess(GIT_WORK_BRANCH_DELETE_PB);
+		executeProcess(GIT_WORK_BRANCH_CREATE_PB);
+		executeProcess(GIT_WORK_BRANCH_SWITCH_PB);
+
+	}
+
+	private static void executeProcess(ProcessBuilder processBuilder) {
 		try {
-			Process process1 = GIT_MAIN_BRANCH_SWITCH_PB.start();
-			int exitCode1 = process1.waitFor();
-			log.debug("Exited with code: " + exitCode1 + " process: " + GIT_MAIN_BRANCH_SWITCH_PB.command().toString());
-
-			Process process2 = GIT_WORK_BRANCH_DELETE_PB.start();
-			int exitCode2 = process2.waitFor();
-			log.debug("Exited with code: " + exitCode2 + " process: " + GIT_WORK_BRANCH_DELETE_PB.command().toString());
-
-			Process process3 = GIT_WORK_BRANCH_CREATE_PB.start();
-			int exitCode3 = process3.waitFor();
-			log.debug("Exited with code: " + exitCode3 + " process: " + GIT_WORK_BRANCH_CREATE_PB.command().toString());
-
-			Process process4 = GIT_WORK_BRANCH_SWITCH_PB.start();
-			int exitCode4 = process4.waitFor();
-			log.debug("Exited with code: " + exitCode4 + " process: " + GIT_WORK_BRANCH_SWITCH_PB.command().toString());
+			Process process = processBuilder.start();
+			int exitCode = process.waitFor();
+			log.debug("Exited with code: " + exitCode + " process: " + processBuilder.command().toString());
 		} catch (IOException ex) {
 			log.error("Caught exception", ex);
-			throw new RuntimeException("Program: '" + GIT_MAIN_BRANCH_SWITCH_PB.command().getFirst() + "' not found", ex);
+			throw new RuntimeException("Program: '" + processBuilder.command().getFirst() + "' not found", ex);
 		} catch (InterruptedException ex) {
 			throw new RuntimeException("Process was interrupted", ex);
 		}
