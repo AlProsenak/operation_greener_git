@@ -46,6 +46,12 @@ public class GitService {
 			.directory(Paths.get(REPO_DIR).toFile());
 	private static final ProcessBuilder GIT_WORK_BRANCH_DELETE_PB = new ProcessBuilder("git", "branch", "-D", WORK_BRANCH_NAME)
 			.directory(Paths.get(REPO_DIR).toFile());
+	private static final ProcessBuilder GIT_ADD_ALL_PB = new ProcessBuilder("git", "add", "-A")
+			.directory(Paths.get(REPO_DIR).toFile());
+	private static final ProcessBuilder GIT_COMMIT_README_PB = new ProcessBuilder("git", "commit", "-m", "Update README.md")
+			.directory(Paths.get(REPO_DIR).toFile());
+	private static final ProcessBuilder GIT_PUSH_ORIGIN_WORK_PB = new ProcessBuilder("git", "push", "-f", "origin", WORK_BRANCH_NAME)
+			.directory(Paths.get(REPO_DIR).toFile());
 
 	public void generateCommitHistory() {
 		// Validate operating system.
@@ -163,6 +169,10 @@ public class GitService {
 			log.error("Caught exception", ex);
 			throw new RuntimeException("Failed to operate on file", ex);
 		}
+
+		// Create dummy commits.
+		executeProcess(GIT_ADD_ALL_PB);
+		executeProcess(GIT_COMMIT_README_PB);
 	}
 
 	private static void executeProcess(ProcessBuilder processBuilder) {
