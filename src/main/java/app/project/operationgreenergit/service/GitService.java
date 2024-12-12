@@ -173,6 +173,9 @@ public class GitService {
 		// Create dummy commits.
 		executeProcess(GIT_ADD_ALL_PB);
 		executeProcess(GIT_COMMIT_README_PB);
+
+		// Push to remote branch.
+		executeProcess(GIT_PUSH_ORIGIN_WORK_PB);
 	}
 
 	private static void executeProcess(ProcessBuilder processBuilder) {
