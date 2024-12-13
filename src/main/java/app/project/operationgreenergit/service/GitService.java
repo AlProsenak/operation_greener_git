@@ -37,7 +37,6 @@ public class GitService {
 	private static final ProcessBuilder CACHE_DIR_GEN_PB = new ProcessBuilder("mkdir", "-p", CACHE_DIR);
 	private static final ProcessBuilder GIT_CLONE_PB = new ProcessBuilder("git", "clone", REPO_URL)
 			.directory(Paths.get(CACHE_DIR).toFile());
-
 	private static final ProcessBuilder GIT_MAIN_BRANCH_SWITCH_PB = new ProcessBuilder("git", "switch", "-f", MAIN_BRANCH_NAME)
 			.directory(Paths.get(REPO_DIR).toFile());
 	private static final ProcessBuilder GIT_WORK_BRANCH_CREATE_PB = new ProcessBuilder("git", "branch", WORK_BRANCH_NAME)
@@ -52,6 +51,13 @@ public class GitService {
 			.directory(Paths.get(REPO_DIR).toFile());
 	private static final ProcessBuilder GIT_PUSH_ORIGIN_WORK_PB = new ProcessBuilder("git", "push", "-f", "origin", WORK_BRANCH_NAME)
 			.directory(Paths.get(REPO_DIR).toFile());
+
+	// Message template
+	private static final String EXCEPTION_CAUGHT = "Exception caught: %s";
+	private static final String PROCESS_START_FAILED = "Failed to start process: %s";
+	private static final String PROCESS_INTERRUPTED = "Process interrupted: %s";
+	private static final String PROCESS_CODE_EXIT = "Process: %s exit code: %s";
+	private static final String PROCESS_CODE_ERROR_EXIT = "Process: %s exit code: %s with error: %s";
 
 	public void generateCommitHistory() {
 		// Validate operating system.
@@ -79,68 +85,66 @@ public class GitService {
 			String gitMessage = sb.toString().trim();
 			String[] gitParts = gitMessage.split("\\s+");
 			String gitVersion = gitParts[gitParts.length - 1];
-			log.debug("Installed Git version: " + gitVersion);
+			log.debug("System Git version: " + gitVersion);
 
 			int exitCode = process.waitFor();
-			log.debug("Exited with code: " + exitCode + " process: " + GIT_VERSION_PB.command().toString());
+
+			log.debug(PROCESS_CODE_EXIT.formatted(GIT_VERSION_PB.command().toString(), exitCode));
 		} catch (IOException ex) {
 			// Command 'git' is not found.
 			// Exception output example: 'Cannot run program "git": error=2, No such file or directory'.
-			log.error("Caught exception", ex);
-			throw new RuntimeException("Program: '" + GIT_VERSION_PB.command().getFirst() + "' not found", ex);
+			String reason = PROCESS_START_FAILED.formatted(GIT_VERSION_PB.command().toString());
+			log.error(EXCEPTION_CAUGHT.formatted(reason), ex);
+			throw new RuntimeException(reason, ex);
 		} catch (InterruptedException ex) {
-			throw new RuntimeException("Process was interrupted", ex);
+			String reason = PROCESS_INTERRUPTED.formatted(GIT_VERSION_PB.command().toString());
+			log.error(EXCEPTION_CAUGHT.formatted(reason), ex);
+			throw new RuntimeException(reason, ex);
 		}
 
 		// Initialize cache repository directory.
-		try {
-			Process process = CACHE_DIR_GEN_PB.start();
-
-			int exitCode = process.waitFor();
-			log.debug("Exited with code: " + exitCode + " process: " + CACHE_DIR_GEN_PB.command().toString());
-		} catch (IOException ex) {
-			log.error("Caught exception", ex);
-			throw new RuntimeException("Could not initialize cache directory");
-		} catch (InterruptedException ex) {
-			throw new RuntimeException("Process was interrupted", ex);
-		}
+		executeProcess(CACHE_DIR_GEN_PB);
 
 		// Clone project repository into cache.
 		try {
 			Process process = GIT_CLONE_PB.start();
-
 			int exitCode = process.waitFor();
-			log.debug("Exited with code: " + exitCode + " process: " + GIT_CLONE_PB.command().toString());
 
-			if (exitCode != 0) {
+			if (exitCode == 0) {
+				log.debug(PROCESS_CODE_EXIT.formatted(GIT_CLONE_PB, exitCode));
+			} else {
 				InputStream errorInputStream = process.getErrorStream();
 				BufferedReader reader = new BufferedReader(new InputStreamReader(errorInputStream));
-				StringBuilder sb = new StringBuilder();
+				StringBuilder errorBuilder = new StringBuilder();
 				String line;
 				while ((line = reader.readLine()) != null) {
-					sb.append(line).append("\n");
+					errorBuilder.append(line).append("\n");
 				}
 				reader.close();
 
 				// Handle cloning repository errors.
 				// Error output example 1: 'ERROR: Repository not found.\nfatal: Could not read from remote repository.'
 				// Error output example 2: 'fatal: destination path 'REPOSITORY_NAME' already exists and is not an empty directory.'
-				String error = sb.toString();
-				log.error("Caught process: " + GIT_CLONE_PB.command().toString() + " error: '" + error + "'");
+				String error = errorBuilder.toString();
+				log.debug(PROCESS_CODE_ERROR_EXIT.formatted(GIT_CLONE_PB.command().toString(), exitCode, error));
+
 				if (error.contains("Repository not found")) {
-					throw new RuntimeException("Repository: '" + REPO_URL + "' not found");
+					throw new RuntimeException("Repository: %s not found".formatted(REPO_URL));
 				}
 				if (error.contains("already exists")) {
-					log.debug("Repository: '" + REPO_URL + "' is already cloned");
+					log.debug("Repository: %s is already cloned".formatted(REPO_URL));
 				}
 			}
 		} catch (IOException ex) {
 			// Command 'git' is not found.
 			// Exception output example: 'Cannot run program "git": error=2, No such file or directory'.
-			log.error("Caught exception", ex);
-			throw new RuntimeException("Program: '" + GIT_CLONE_PB.command().getFirst() + "' not found", ex);
+			String reason = PROCESS_START_FAILED.formatted(GIT_CLONE_PB.command().toString());
+			log.error(EXCEPTION_CAUGHT.formatted(reason), ex);
+			throw new RuntimeException(reason, ex);
 		} catch (InterruptedException ex) {
-			throw new RuntimeException("Process was interrupted", ex);
+			String reason = PROCESS_INTERRUPTED.formatted(GIT_CLONE_PB.command().toString());
+			log.error(EXCEPTION_CAUGHT.formatted(reason), ex);
+			throw new RuntimeException(reason, ex);
 		}
 
 		// Switch to clean Git branch.
@@ -182,27 +186,31 @@ public class GitService {
 		try {
 			Process process = processBuilder.start();
 			int exitCode = process.waitFor();
-			log.debug("Exited with code: " + exitCode + " process: " + processBuilder.command().toString());
 
 			if (exitCode == 0) {
+				log.debug(PROCESS_CODE_EXIT.formatted(processBuilder.command().toString(), exitCode));
 				return;
 			}
-			
+
 			InputStream errorInputStream = process.getErrorStream();
 			BufferedReader reader = new BufferedReader(new InputStreamReader(errorInputStream));
-			StringBuilder sb = new StringBuilder();
+			StringBuilder errorBuilder = new StringBuilder();
 			String line;
 			while ((line = reader.readLine()) != null) {
-				sb.append(line).append("\n");
+				errorBuilder.append(line).append("\n");
 			}
 			reader.close();
-			String error = sb.toString();
-			log.debug("Process: " + processBuilder.command().toString() + " Error: " + error);
+
+			String error = errorBuilder.toString();
+			log.debug(PROCESS_CODE_ERROR_EXIT.formatted(processBuilder.command().toString(), exitCode, error));
 		} catch (IOException ex) {
-			log.error("Caught exception", ex);
-			throw new RuntimeException("Program: '" + processBuilder.command().getFirst() + "' not found", ex);
+			String reason = PROCESS_START_FAILED.formatted(CACHE_DIR_GEN_PB.command().toString());
+			log.error(EXCEPTION_CAUGHT.formatted(reason), ex);
+			throw new RuntimeException(reason, ex);
 		} catch (InterruptedException ex) {
-			throw new RuntimeException("Process was interrupted", ex);
+			String reason = PROCESS_INTERRUPTED.formatted(processBuilder.command().toString());
+			log.error(EXCEPTION_CAUGHT.formatted(reason), ex);
+			throw new RuntimeException(reason, ex);
 		}
 	}
 
