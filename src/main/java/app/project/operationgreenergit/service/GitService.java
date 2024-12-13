@@ -183,6 +183,21 @@ public class GitService {
 			Process process = processBuilder.start();
 			int exitCode = process.waitFor();
 			log.debug("Exited with code: " + exitCode + " process: " + processBuilder.command().toString());
+
+			if (exitCode == 0) {
+				return;
+			}
+			
+			InputStream errorInputStream = process.getErrorStream();
+			BufferedReader reader = new BufferedReader(new InputStreamReader(errorInputStream));
+			StringBuilder sb = new StringBuilder();
+			String line;
+			while ((line = reader.readLine()) != null) {
+				sb.append(line).append("\n");
+			}
+			reader.close();
+			String error = sb.toString();
+			log.debug("Process: " + processBuilder.command().toString() + " Error: " + error);
 		} catch (IOException ex) {
 			log.error("Caught exception", ex);
 			throw new RuntimeException("Program: '" + processBuilder.command().getFirst() + "' not found", ex);
