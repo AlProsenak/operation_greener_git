@@ -71,18 +71,9 @@ public class GitService {
 		try {
 			Process process = GIT_VERSION_PB.start();
 
-			InputStream inputStream = process.getInputStream();
-			BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-			StringBuilder sb = new StringBuilder();
-			String line;
-			while ((line = reader.readLine()) != null) {
-				sb.append(line).append("\n");
-			}
-			reader.close();
-
 			// Trim last part of Git version output.
 			// Output example: 'git version 2.45.1'.
-			String gitMessage = sb.toString().trim();
+			String gitMessage = readInputStream(process.getInputStream()).trim();
 			String[] gitParts = gitMessage.split("\\s+");
 			String gitVersion = gitParts[gitParts.length - 1];
 			log.debug("System Git version: " + gitVersion);
@@ -113,19 +104,10 @@ public class GitService {
 			if (exitCode == 0) {
 				log.debug(PROCESS_CODE_EXIT.formatted(GIT_CLONE_PB, exitCode));
 			} else {
-				InputStream errorInputStream = process.getErrorStream();
-				BufferedReader reader = new BufferedReader(new InputStreamReader(errorInputStream));
-				StringBuilder errorBuilder = new StringBuilder();
-				String line;
-				while ((line = reader.readLine()) != null) {
-					errorBuilder.append(line).append("\n");
-				}
-				reader.close();
-
 				// Handle cloning repository errors.
 				// Error output example 1: 'ERROR: Repository not found.\nfatal: Could not read from remote repository.'
 				// Error output example 2: 'fatal: destination path 'REPOSITORY_NAME' already exists and is not an empty directory.'
-				String error = errorBuilder.toString();
+				String error = readInputStream(process.getInputStream());
 				log.debug(PROCESS_CODE_ERROR_EXIT.formatted(GIT_CLONE_PB.command().toString(), exitCode, error));
 
 				if (error.contains("Repository not found")) {
@@ -192,16 +174,7 @@ public class GitService {
 				return;
 			}
 
-			InputStream errorInputStream = process.getErrorStream();
-			BufferedReader reader = new BufferedReader(new InputStreamReader(errorInputStream));
-			StringBuilder errorBuilder = new StringBuilder();
-			String line;
-			while ((line = reader.readLine()) != null) {
-				errorBuilder.append(line).append("\n");
-			}
-			reader.close();
-
-			String error = errorBuilder.toString();
+			String error = readInputStream(process.getErrorStream());
 			log.debug(PROCESS_CODE_ERROR_EXIT.formatted(processBuilder.command().toString(), exitCode, error));
 		} catch (IOException ex) {
 			String reason = PROCESS_START_FAILED.formatted(CACHE_DIR_GEN_PB.command().toString());
@@ -212,6 +185,22 @@ public class GitService {
 			log.error(EXCEPTION_CAUGHT.formatted(reason), ex);
 			throw new RuntimeException(reason, ex);
 		}
+	}
+
+	private static String readInputStream(InputStream inputStream) throws IOException {
+		if (inputStream == null) {
+			return null;
+		}
+
+		BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+		StringBuilder sb = new StringBuilder();
+		String line;
+		while ((line = reader.readLine()) != null) {
+			sb.append(line).append("\n");
+		}
+		reader.close();
+
+		return sb.toString();
 	}
 
 }
