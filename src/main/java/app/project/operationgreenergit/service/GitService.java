@@ -60,14 +60,46 @@ public class GitService {
 	private static final String PROCESS_CODE_ERROR_EXIT = "Process: %s exit code: %s with error: %s";
 
 	public void generateCommitHistory() {
-		// Validate operating system.
+		validateSupportedOS();
+		validateSystemGitVersion();
+
+		// Initialize cache directory.
+		executeProcess(CACHE_DIR_GEN_PB);
+		// Clone project repository into cache.
+		cloneRepository();
+
+		// Switch to clean Git branch.
+		executeProcess(GIT_MAIN_BRANCH_SWITCH_PB);
+		executeProcess(GIT_WORK_BRANCH_DELETE_PB);
+		executeProcess(GIT_WORK_BRANCH_CREATE_PB);
+		executeProcess(GIT_WORK_BRANCH_SWITCH_PB);
+
+		// Create and write to dummy file.
+		createFile();
+
+		// Create dummy commits.
+		executeProcess(GIT_ADD_ALL_PB);
+		executeProcess(GIT_COMMIT_README_PB);
+
+		// Push to remote branch.
+		executeProcess(GIT_PUSH_ORIGIN_WORK_PB);
+	}
+
+	private static void validateSupportedOS() {
+		if (isSupportedOS()) {
+			return;
+		}
+		// TODO: Move this logic to initialization phase.
+		throw new RuntimeException("Service does not support Windows operating system");
+	}
+
+	private static boolean isSupportedOS() {
 		String os = System.getProperty("os.name");
 		boolean isWindows = os.equalsIgnoreCase("windows");
-		if (isWindows) {
-			throw new RuntimeException("Service does not support Windows operating system");
-		}
+		return !isWindows;
+	}
 
-		// Validate Git is installed.
+	private static void validateSystemGitVersion() {
 		try {
 			Process process = GIT_VERSION_PB.start();
 
@@ -92,11 +124,9 @@ public class GitService {
 			log.error(EXCEPTION_CAUGHT.formatted(reason), ex);
 			throw new RuntimeException(reason, ex);
 		}
+	}
 
-		// Initialize cache repository directory.
-		executeProcess(CACHE_DIR_GEN_PB);
-
-		// Clone project repository into cache.
+	private static void cloneRepository() {
 		try {
 			Process process = GIT_CLONE_PB.start();
 			int exitCode = process.waitFor();
@@ -128,40 +158,6 @@ public class GitService {
 			log.error(EXCEPTION_CAUGHT.formatted(reason), ex);
 			throw new RuntimeException(reason, ex);
 		}
-
-		// Switch to clean Git branch.
-		executeProcess(GIT_MAIN_BRANCH_SWITCH_PB);
-		executeProcess(GIT_WORK_BRANCH_DELETE_PB);
-		executeProcess(GIT_WORK_BRANCH_CREATE_PB);
-		executeProcess(GIT_WORK_BRANCH_SWITCH_PB);
-
-		// Create and write to dummy file.
-		try {
-			boolean isNewFile = false;
-			if (!WORK_FILE.exists()) {
-				isNewFile = WORK_FILE.createNewFile();
-			}
-
-			FileWriter fw = new FileWriter(WORK_FILE, true);
-			BufferedWriter bw = new BufferedWriter(fw);
-			if (isNewFile) {
-				bw.write("Begin operation Greener Git!");
-				bw.newLine();
-			}
-			bw.write("Sir Yes Sir!");
-			bw.newLine();
-			bw.close();
-		} catch (IOException ex) {
-			log.error("Caught exception", ex);
-			throw new RuntimeException("Failed to operate on file", ex);
-		}
-
-		// Create dummy commits.
-		executeProcess(GIT_ADD_ALL_PB);
-		executeProcess(GIT_COMMIT_README_PB);
-
-		// Push to remote branch.
-		executeProcess(GIT_PUSH_ORIGIN_WORK_PB);
 	}
 
 	private static void executeProcess(ProcessBuilder processBuilder) {
@@ -201,6 +197,28 @@ public class GitService {
 		reader.close();
 
 		return sb.toString();
+	}
+
+	private static void createFile() {
+		try {
+			boolean isNewFile = false;
+			if (!WORK_FILE.exists()) {
+				isNewFile = WORK_FILE.createNewFile();
+			}
+
+			FileWriter fw = new FileWriter(WORK_FILE, true);
+			BufferedWriter bw = new BufferedWriter(fw);
+			if (isNewFile) {
+				bw.write("Begin operation Greener Git!");
+				bw.newLine();
+			}
+			bw.write("Sir Yes Sir!");
+			bw.newLine();
+			bw.close();
+		} catch (IOException ex) {
+			log.error("Caught exception", ex);
+			throw new RuntimeException("Failed to operate on file", ex);
+		}
 	}
 
 }
