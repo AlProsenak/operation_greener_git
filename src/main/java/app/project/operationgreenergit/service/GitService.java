@@ -3,15 +3,13 @@ package app.project.operationgreenergit.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.nio.file.Paths;
 
+import static app.project.operationgreenergit.util.InputStreamUtil.readInputStream;
 import static app.project.operationgreenergit.util.MessageTemplate.EXCEPTION_CAUGHT;
 import static app.project.operationgreenergit.util.MessageTemplate.FILE_OPERATION_FAILED;
 import static app.project.operationgreenergit.util.MessageTemplate.GIT_VERSION;
@@ -185,22 +183,6 @@ public class GitService {
 			log.error(EXCEPTION_CAUGHT.formatted(reason), ex);
 			throw new RuntimeException(reason, ex);
 		}
-	}
-
-	private static String readInputStream(InputStream inputStream) throws IOException {
-		if (inputStream == null) {
-			return null;
-		}
-
-		BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-		StringBuilder sb = new StringBuilder();
-		String line;
-		while ((line = reader.readLine()) != null) {
-			sb.append(line).append("\n");
-		}
-		reader.close();
-
-		return sb.toString();
 	}
 
 	private static void createFile() {
