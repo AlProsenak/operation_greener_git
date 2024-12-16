@@ -13,10 +13,15 @@ import java.io.InputStreamReader;
 import java.nio.file.Paths;
 
 import static app.project.operationgreenergit.util.MessageTemplate.EXCEPTION_CAUGHT;
+import static app.project.operationgreenergit.util.MessageTemplate.FILE_OPERATION_FAILED;
+import static app.project.operationgreenergit.util.MessageTemplate.GIT_VERSION;
+import static app.project.operationgreenergit.util.MessageTemplate.NON_SUPPORTED_OS;
 import static app.project.operationgreenergit.util.MessageTemplate.PROCESS_CODE_ERROR_EXIT;
 import static app.project.operationgreenergit.util.MessageTemplate.PROCESS_CODE_EXIT;
 import static app.project.operationgreenergit.util.MessageTemplate.PROCESS_INTERRUPTED;
 import static app.project.operationgreenergit.util.MessageTemplate.PROCESS_START_FAILED;
+import static app.project.operationgreenergit.util.MessageTemplate.REPOSITORY_ALREADY_CLONED;
+import static app.project.operationgreenergit.util.MessageTemplate.REPOSITORY_NOT_FOUND;
 
 @Slf4j
 @Service
@@ -89,7 +94,7 @@ public class GitService {
 			return;
 		}
 		// TODO: Move this logic to initialization phase.
-		throw new RuntimeException("Service does not support Windows operating system");
+		throw new RuntimeException(NON_SUPPORTED_OS.formatted("'Windows'"));
 	}
 
 	private static boolean isSupportedOS() {
@@ -107,7 +112,7 @@ public class GitService {
 			String gitMessage = readInputStream(process.getInputStream()).trim();
 			String[] gitParts = gitMessage.split("\\s+");
 			String gitVersion = gitParts[gitParts.length - 1];
-			log.debug("System Git version: " + gitVersion);
+			log.debug(GIT_VERSION.formatted(gitVersion));
 
 			int exitCode = process.waitFor();
 
@@ -140,10 +145,10 @@ public class GitService {
 				log.debug(PROCESS_CODE_ERROR_EXIT.formatted(GIT_CLONE_PB.command().toString(), exitCode, error));
 
 				if (error.contains("Repository not found")) {
-					throw new RuntimeException("Repository: %s not found".formatted(REPO_URL));
+					throw new RuntimeException(REPOSITORY_NOT_FOUND.formatted(REPO_URL));
 				}
 				if (error.contains("already exists")) {
-					log.debug("Repository: %s is already cloned".formatted(REPO_URL));
+					log.debug(REPOSITORY_ALREADY_CLONED.formatted(REPO_URL));
 				}
 			}
 		} catch (IOException ex) {
@@ -215,8 +220,9 @@ public class GitService {
 			bw.newLine();
 			bw.close();
 		} catch (IOException ex) {
-			log.error("Caught exception", ex);
-			throw new RuntimeException("Failed to operate on file", ex);
+			String reason = FILE_OPERATION_FAILED.formatted(WORK_FILE);
+			log.error(EXCEPTION_CAUGHT.formatted(reason), ex);
+			throw new RuntimeException(reason, ex);
 		}
 	}
 
