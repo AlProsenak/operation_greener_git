@@ -12,6 +12,12 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Paths;
 
+import static app.project.operationgreenergit.util.MessageTemplate.EXCEPTION_CAUGHT;
+import static app.project.operationgreenergit.util.MessageTemplate.PROCESS_CODE_ERROR_EXIT;
+import static app.project.operationgreenergit.util.MessageTemplate.PROCESS_CODE_EXIT;
+import static app.project.operationgreenergit.util.MessageTemplate.PROCESS_INTERRUPTED;
+import static app.project.operationgreenergit.util.MessageTemplate.PROCESS_START_FAILED;
+
 @Slf4j
 @Service
 public class GitService {
@@ -51,13 +57,6 @@ public class GitService {
 			.directory(Paths.get(REPO_DIR).toFile());
 	private static final ProcessBuilder GIT_PUSH_ORIGIN_WORK_PB = new ProcessBuilder("git", "push", "-f", "origin", WORK_BRANCH_NAME)
 			.directory(Paths.get(REPO_DIR).toFile());
-
-	// Message template
-	private static final String EXCEPTION_CAUGHT = "Exception caught: %s";
-	private static final String PROCESS_START_FAILED = "Failed to start process: %s";
-	private static final String PROCESS_INTERRUPTED = "Process interrupted: %s";
-	private static final String PROCESS_CODE_EXIT = "Process: %s exit code: %s";
-	private static final String PROCESS_CODE_ERROR_EXIT = "Process: %s exit code: %s with error: %s";
 
 	public void generateCommitHistory() {
 		validateSupportedOS();
