@@ -175,7 +175,7 @@ public class GitService {
 			String error = readInputStream(process.getErrorStream());
 			log.debug(PROCESS_CODE_ERROR_EXIT.formatted(processBuilder.command().toString(), exitCode, error));
 		} catch (IOException ex) {
-			String reason = PROCESS_START_FAILED.formatted(CACHE_DIR_GEN_PB.command().toString());
+			String reason = PROCESS_START_FAILED.formatted(processBuilder.command().toString());
 			log.error(EXCEPTION_CAUGHT.formatted(reason), ex);
 			throw new RuntimeException(reason, ex);
 		} catch (InterruptedException ex) {
