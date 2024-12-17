@@ -20,6 +20,7 @@ import static app.project.operationgreenergit.util.MessageTemplate.PROCESS_INTER
 import static app.project.operationgreenergit.util.MessageTemplate.PROCESS_START_FAILED;
 import static app.project.operationgreenergit.util.MessageTemplate.REPOSITORY_ALREADY_CLONED;
 import static app.project.operationgreenergit.util.MessageTemplate.REPOSITORY_NOT_FOUND;
+import static app.project.operationgreenergit.util.ProcessExecutorUtil.executeProcess;
 
 @Slf4j
 @Service
@@ -157,29 +158,6 @@ public class GitService {
 			throw new RuntimeException(reason, ex);
 		} catch (InterruptedException ex) {
 			String reason = PROCESS_INTERRUPTED.formatted(GIT_CLONE_PB.command().toString());
-			log.error(EXCEPTION_CAUGHT.formatted(reason), ex);
-			throw new RuntimeException(reason, ex);
-		}
-	}
-
-	private static void executeProcess(ProcessBuilder processBuilder) {
-		try {
-			Process process = processBuilder.start();
-			int exitCode = process.waitFor();
-
-			if (exitCode == 0) {
-				log.debug(PROCESS_CODE_EXIT.formatted(processBuilder.command().toString(), exitCode));
-				return;
-			}
-
-			String error = readInputStream(process.getErrorStream());
-			log.debug(PROCESS_CODE_ERROR_EXIT.formatted(processBuilder.command().toString(), exitCode, error));
-		} catch (IOException ex) {
-			String reason = PROCESS_START_FAILED.formatted(processBuilder.command().toString());
-			log.error(EXCEPTION_CAUGHT.formatted(reason), ex);
-			throw new RuntimeException(reason, ex);
-		} catch (InterruptedException ex) {
-			String reason = PROCESS_INTERRUPTED.formatted(processBuilder.command().toString());
 			log.error(EXCEPTION_CAUGHT.formatted(reason), ex);
 			throw new RuntimeException(reason, ex);
 		}
