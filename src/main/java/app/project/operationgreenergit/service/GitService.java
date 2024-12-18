@@ -20,7 +20,7 @@ import static app.project.operationgreenergit.util.MessageTemplate.PROCESS_INTER
 import static app.project.operationgreenergit.util.MessageTemplate.PROCESS_START_FAILED;
 import static app.project.operationgreenergit.util.MessageTemplate.REPOSITORY_ALREADY_CLONED;
 import static app.project.operationgreenergit.util.MessageTemplate.REPOSITORY_NOT_FOUND;
-import static app.project.operationgreenergit.util.ProcessExecutorUtil.executeProcess;
+import static app.project.operationgreenergit.util.ProcessExecutorUtil.executeHandledProcess;
 
 @Slf4j
 @Service
@@ -67,25 +67,25 @@ public class GitService {
 		validateSystemGitVersion();
 
 		// Initialize cache directory.
-		executeProcess(CACHE_DIR_GEN_PB);
+		executeHandledProcess(CACHE_DIR_GEN_PB, RuntimeException::new);
 		// Clone project repository into cache.
 		cloneRepository();
 
 		// Switch to clean Git branch.
-		executeProcess(GIT_MAIN_BRANCH_SWITCH_PB);
-		executeProcess(GIT_WORK_BRANCH_DELETE_PB);
-		executeProcess(GIT_WORK_BRANCH_CREATE_PB);
-		executeProcess(GIT_WORK_BRANCH_SWITCH_PB);
+		executeHandledProcess(GIT_MAIN_BRANCH_SWITCH_PB, RuntimeException::new);
+		executeHandledProcess(GIT_WORK_BRANCH_DELETE_PB, RuntimeException::new);
+		executeHandledProcess(GIT_WORK_BRANCH_CREATE_PB, RuntimeException::new);
+		executeHandledProcess(GIT_WORK_BRANCH_SWITCH_PB, RuntimeException::new);
 
 		// Create and write to dummy file.
 		createFile();
 
 		// Create dummy commits.
-		executeProcess(GIT_ADD_ALL_PB);
-		executeProcess(GIT_COMMIT_README_PB);
+		executeHandledProcess(GIT_ADD_ALL_PB, RuntimeException::new);
+		executeHandledProcess(GIT_COMMIT_README_PB, RuntimeException::new);
 
 		// Push to remote branch.
-		executeProcess(GIT_PUSH_ORIGIN_WORK_PB);
+		executeHandledProcess(GIT_PUSH_ORIGIN_WORK_PB, RuntimeException::new);
 	}
 
 	private static void validateSupportedOS() {
