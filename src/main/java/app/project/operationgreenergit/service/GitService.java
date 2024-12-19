@@ -125,6 +125,7 @@ public class GitService {
 		} catch (InterruptedException ex) {
 			String reason = PROCESS_INTERRUPTED.formatted(GIT_VERSION_PB.command().toString());
 			log.error(EXCEPTION_CAUGHT.formatted(reason), ex);
+			Thread.currentThread().interrupt();
 			throw new RuntimeException(reason, ex);
 		}
 	}
@@ -159,6 +160,7 @@ public class GitService {
 		} catch (InterruptedException ex) {
 			String reason = PROCESS_INTERRUPTED.formatted(GIT_CLONE_PB.command().toString());
 			log.error(EXCEPTION_CAUGHT.formatted(reason), ex);
+			Thread.currentThread().interrupt();
 			throw new RuntimeException(reason, ex);
 		}
 	}

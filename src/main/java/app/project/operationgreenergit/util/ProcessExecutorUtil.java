@@ -51,6 +51,7 @@ public final class ProcessExecutorUtil {
 		} catch (InterruptedException ex) {
 			String reason = PROCESS_INTERRUPTED.formatted(processBuilder.command().toString());
 			log.error(EXCEPTION_CAUGHT.formatted(reason), ex);
+			Thread.currentThread().interrupt();
 			throw new RuntimeException(reason, ex);
 		}
 	}
