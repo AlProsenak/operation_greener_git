@@ -39,15 +39,15 @@ public final class ProcessExecutorUtil {
 
 	public static void executeHandledProcess(
 			ProcessBuilder processBuilder,
-			ExceptionSupplier<?> exceptionSupplier) {
-		Assert.notNull(exceptionSupplier, MUST_NOT_BE_NULL.formatted("exceptionSupplier"));
+			ExceptionSupplier<?> ioExceptionSupplier) {
+		Assert.notNull(ioExceptionSupplier, MUST_NOT_BE_NULL.formatted("ioExceptionSupplier"));
 
 		try {
 			executeProcess(processBuilder);
 		} catch (IOException ex) {
 			String reason = PROCESS_START_FAILED.formatted(processBuilder.command().toString());
 			log.error(EXCEPTION_CAUGHT.formatted(reason), ex);
-			throw exceptionSupplier.get(reason, ex);
+			throw ioExceptionSupplier.get(reason, ex);
 		} catch (InterruptedException ex) {
 			String reason = PROCESS_INTERRUPTED.formatted(processBuilder.command().toString());
 			log.error(EXCEPTION_CAUGHT.formatted(reason), ex);
