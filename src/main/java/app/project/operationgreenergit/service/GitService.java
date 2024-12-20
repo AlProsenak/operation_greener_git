@@ -67,25 +67,25 @@ public class GitService {
 		validateSystemGitVersion();
 
 		// Initialize cache directory.
-		executeHandledProcess(CACHE_DIR_GEN_PB, RuntimeException::new);
+		executeHandledProcess(CACHE_DIR_GEN_PB, RuntimeException::new, RuntimeException::new);
 		// Clone project repository into cache.
 		cloneRepository();
 
 		// Switch to clean Git branch.
-		executeHandledProcess(GIT_MAIN_BRANCH_SWITCH_PB, RuntimeException::new);
-		executeHandledProcess(GIT_WORK_BRANCH_DELETE_PB, RuntimeException::new);
-		executeHandledProcess(GIT_WORK_BRANCH_CREATE_PB, RuntimeException::new);
-		executeHandledProcess(GIT_WORK_BRANCH_SWITCH_PB, RuntimeException::new);
+		executeHandledProcess(GIT_MAIN_BRANCH_SWITCH_PB, RuntimeException::new, RuntimeException::new);
+		executeHandledProcess(GIT_WORK_BRANCH_DELETE_PB, RuntimeException::new, RuntimeException::new);
+		executeHandledProcess(GIT_WORK_BRANCH_CREATE_PB, RuntimeException::new, RuntimeException::new);
+		executeHandledProcess(GIT_WORK_BRANCH_SWITCH_PB, RuntimeException::new, RuntimeException::new);
 
 		// Create and write to dummy file.
 		createFile();
 
 		// Create dummy commits.
-		executeHandledProcess(GIT_ADD_ALL_PB, RuntimeException::new);
-		executeHandledProcess(GIT_COMMIT_README_PB, RuntimeException::new);
+		executeHandledProcess(GIT_ADD_ALL_PB, RuntimeException::new, RuntimeException::new);
+		executeHandledProcess(GIT_COMMIT_README_PB, RuntimeException::new, RuntimeException::new);
 
 		// Push to remote branch.
-		executeHandledProcess(GIT_PUSH_ORIGIN_WORK_PB, RuntimeException::new);
+		executeHandledProcess(GIT_PUSH_ORIGIN_WORK_PB, RuntimeException::new, RuntimeException::new);
 	}
 
 	private static void validateSupportedOS() {

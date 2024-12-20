@@ -39,8 +39,10 @@ public final class ProcessExecutorUtil {
 
 	public static void executeHandledProcess(
 			ProcessBuilder processBuilder,
-			ExceptionSupplier<?> ioExceptionSupplier) {
+			ExceptionSupplier<?> ioExceptionSupplier,
+			ExceptionSupplier<?> interruptedExceptionSupplier) {
 		Assert.notNull(ioExceptionSupplier, MUST_NOT_BE_NULL.formatted("ioExceptionSupplier"));
+		Assert.notNull(interruptedExceptionSupplier, MUST_NOT_BE_NULL.formatted("interruptedExceptionSupplier"));
 
 		try {
 			executeProcess(processBuilder);
@@ -52,7 +54,7 @@ public final class ProcessExecutorUtil {
 			String reason = PROCESS_INTERRUPTED.formatted(processBuilder.command().toString());
 			log.error(EXCEPTION_CAUGHT.formatted(reason), ex);
 			Thread.currentThread().interrupt();
-			throw new RuntimeException(reason, ex);
+			throw interruptedExceptionSupplier.get(reason, ex);
 		}
 	}
 
