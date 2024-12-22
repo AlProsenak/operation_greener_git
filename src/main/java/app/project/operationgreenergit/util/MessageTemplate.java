@@ -15,6 +15,8 @@ public final class MessageTemplate {
 
 	public static final String MUST_NOT_BE_NULL = "'%s' must not be null";
 
+	public static final String NOT_FOUND = "Not found: %s";
+
 	public static final String PROCESS_START_FAILED = "Failed to start process: %s";
 	public static final String PROCESS_INTERRUPTED = "Process interrupted: %s";
 	public static final String PROCESS_CODE_EXIT = "Process: %s exit code: '%s'";
