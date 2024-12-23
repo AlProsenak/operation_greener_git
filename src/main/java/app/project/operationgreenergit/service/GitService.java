@@ -46,23 +46,33 @@ public class GitService {
 	// Process builder
 	// Example when command 'git' is not found.
 	// Exception output: 'Cannot run program "git": error=2, No such file or directory'.
-	private static final ProcessBuilder GIT_VERSION_PB = new ProcessBuilder("git", "--version");
-	private static final ProcessBuilder CACHE_DIR_GEN_PB = new ProcessBuilder("mkdir", "-p", CACHE_DIR);
-	private static final ProcessBuilder GIT_CLONE_PB = new ProcessBuilder("git", "clone", REPO_URL)
+	private static final ProcessBuilder GIT_VERSION_PB = new ProcessBuilder()
+			.command("/bin/bash", "-c", "git --version");
+	private static final ProcessBuilder CACHE_DIR_GEN_PB = new ProcessBuilder()
+			.command("/bin/bash", "-c", "mkdir -p %s".formatted(CACHE_DIR));
+	private static final ProcessBuilder GIT_CLONE_PB = new ProcessBuilder()
+			.command("/bin/bash", "-c", "git clone %s".formatted(REPO_URL))
 			.directory(Paths.get(CACHE_DIR).toFile());
-	private static final ProcessBuilder GIT_MAIN_BRANCH_SWITCH_PB = new ProcessBuilder("git", "switch", "-f", MAIN_BRANCH_NAME)
+	private static final ProcessBuilder GIT_MAIN_BRANCH_SWITCH_PB = new ProcessBuilder()
+			.command("/bin/bash", "-c", "git switch -f %s".formatted(MAIN_BRANCH_NAME))
 			.directory(Paths.get(REPO_DIR).toFile());
-	private static final ProcessBuilder GIT_WORK_BRANCH_CREATE_PB = new ProcessBuilder("git", "branch", WORK_BRANCH_NAME)
+	private static final ProcessBuilder GIT_WORK_BRANCH_CREATE_PB = new ProcessBuilder()
+			.command("/bin/bash", "-c", "git branch %s".formatted(WORK_BRANCH_NAME))
 			.directory(Paths.get(REPO_DIR).toFile());
-	private static final ProcessBuilder GIT_WORK_BRANCH_SWITCH_PB = new ProcessBuilder("git", "switch", WORK_BRANCH_NAME)
+	private static final ProcessBuilder GIT_WORK_BRANCH_SWITCH_PB = new ProcessBuilder()
+			.command("/bin/bash", "-c", "git switch %s".formatted(WORK_BRANCH_NAME))
 			.directory(Paths.get(REPO_DIR).toFile());
-	private static final ProcessBuilder GIT_WORK_BRANCH_DELETE_PB = new ProcessBuilder("git", "branch", "-D", WORK_BRANCH_NAME)
+	private static final ProcessBuilder GIT_WORK_BRANCH_DELETE_PB = new ProcessBuilder()
+			.command("/bin/bash", "-c", "git branch -D %s".formatted(WORK_BRANCH_NAME))
 			.directory(Paths.get(REPO_DIR).toFile());
-	private static final ProcessBuilder GIT_ADD_ALL_PB = new ProcessBuilder("git", "add", "-A")
+	private static final ProcessBuilder GIT_ADD_ALL_PB = new ProcessBuilder()
+			.command("/bin/bash", "-c", "git add -A")
 			.directory(Paths.get(REPO_DIR).toFile());
-	private static final ProcessBuilder GIT_COMMIT_README_PB = new ProcessBuilder("git", "commit", "-m", "Update README.md")
+	private static final ProcessBuilder GIT_COMMIT_README_PB = new ProcessBuilder()
+			.command("/bin/bash", "-c", "git commit -m '%s'".formatted("Update README.md"))
 			.directory(Paths.get(REPO_DIR).toFile());
-	private static final ProcessBuilder GIT_PUSH_ORIGIN_WORK_PB = new ProcessBuilder("git", "push", "-f", "origin", WORK_BRANCH_NAME)
+	private static final ProcessBuilder GIT_PUSH_ORIGIN_WORK_PB = new ProcessBuilder()
+			.command("/bin/bash", "-c", "git push -f origin %s".formatted(WORK_BRANCH_NAME))
 			.directory(Paths.get(REPO_DIR).toFile());
 
 	public void generateCommitHistory() {
