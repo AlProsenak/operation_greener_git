@@ -1,5 +1,7 @@
 package app.project.operationgreenergit.service;
 
+import app.project.operationgreenergit.util.ProcessExecutor;
+import app.project.operationgreenergit.util.ProcessResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -42,6 +44,8 @@ public class GitService {
 	private static final File WORK_FILE = new File(REPO_DIR + "/GREENER_GIT.md");
 
 	// Process builder
+	// Example when command 'git' is not found.
+	// Exception output: 'Cannot run program "git": error=2, No such file or directory'.
 	private static final ProcessBuilder GIT_VERSION_PB = new ProcessBuilder("git", "--version");
 	private static final ProcessBuilder CACHE_DIR_GEN_PB = new ProcessBuilder("mkdir", "-p", CACHE_DIR);
 	private static final ProcessBuilder GIT_CLONE_PB = new ProcessBuilder("git", "clone", REPO_URL)
@@ -87,65 +91,45 @@ public class GitService {
 	}
 
 	private static void validateSystemGitVersion() {
-		try {
-			Process process = GIT_VERSION_PB.start();
+		ProcessResult processResult = new ProcessExecutor(GIT_VERSION_PB)
+				.readOutput()
+				.startHandled();
 
-			// Trim last part of Git version output.
-			// Output example: 'git version 2.45.1'.
-			String gitMessage = readInputStream(process.getInputStream()).trim();
-			String[] gitParts = gitMessage.split("\\s+");
-			String gitVersion = gitParts[gitParts.length - 1];
-			log.debug(GIT_VERSION.formatted(gitVersion));
+		String gitVersionOutput = processResult.getStandardOutputOrThrow(RuntimeException::new);
+		String gitVersion = parseGitVersion(gitVersionOutput);
 
-			int exitCode = process.waitFor();
+		log.debug(GIT_VERSION.formatted(gitVersion));
+		log.debug(PROCESS_CODE_EXIT.formatted(GIT_VERSION_PB.command().toString(), processResult.getExitCode()));
+	}
 
-			log.debug(PROCESS_CODE_EXIT.formatted(GIT_VERSION_PB.command().toString(), exitCode));
-		} catch (IOException ex) {
-			// Command 'git' is not found.
-			// Exception output example: 'Cannot run program "git": error=2, No such file or directory'.
-			String reason = PROCESS_START_FAILED.formatted(GIT_VERSION_PB.command().toString());
-			log.error(EXCEPTION_CAUGHT.formatted(reason), ex);
-			throw new RuntimeException(reason, ex);
-		} catch (InterruptedException ex) {
-			String reason = PROCESS_INTERRUPTED.formatted(GIT_VERSION_PB.command().toString());
-			log.error(EXCEPTION_CAUGHT.formatted(reason), ex);
-			Thread.currentThread().interrupt();
-			throw new RuntimeException(reason, ex);
-		}
+	private static String parseGitVersion(String gitVersionOutput) {
+		// Trim last part of Git version output.
+		// Output example: 'git version 2.45.1'.
+		String[] gitParts = gitVersionOutput.split("\\s+");
+		return gitParts[gitParts.length - 1];
 	}
 
 	private static void cloneRepository() {
-		try {
-			Process process = GIT_CLONE_PB.start();
-			int exitCode = process.waitFor();
+		ProcessResult processResult = new ProcessExecutor(GIT_CLONE_PB)
+				.startHandled();
 
-			if (exitCode == 0) {
-				log.debug(PROCESS_CODE_EXIT.formatted(GIT_CLONE_PB, exitCode));
-			} else {
-				// Handle cloning repository errors.
-				// Error output example 1: 'ERROR: Repository not found.\nfatal: Could not read from remote repository.'
-				// Error output example 2: 'fatal: destination path 'REPOSITORY_NAME' already exists and is not an empty directory.'
-				String error = readInputStream(process.getInputStream());
-				log.debug(PROCESS_CODE_ERROR_EXIT.formatted(GIT_CLONE_PB.command().toString(), exitCode, error));
+		int exitCode = processResult.getExitCode();
+		if (exitCode == 0) {
+			log.debug(PROCESS_CODE_EXIT.formatted(GIT_CLONE_PB.command(), exitCode));
+			return;
+		}
 
-				if (error.contains("Repository not found")) {
-					throw new RuntimeException(REPOSITORY_NOT_FOUND.formatted(REPO_URL));
-				}
-				if (error.contains("already exists")) {
-					log.debug(REPOSITORY_ALREADY_CLONED.formatted(REPO_URL));
-				}
-			}
-		} catch (IOException ex) {
-			// Command 'git' is not found.
-			// Exception output example: 'Cannot run program "git": error=2, No such file or directory'.
-			String reason = PROCESS_START_FAILED.formatted(GIT_CLONE_PB.command().toString());
-			log.error(EXCEPTION_CAUGHT.formatted(reason), ex);
-			throw new RuntimeException(reason, ex);
-		} catch (InterruptedException ex) {
-			String reason = PROCESS_INTERRUPTED.formatted(GIT_CLONE_PB.command().toString());
-			log.error(EXCEPTION_CAUGHT.formatted(reason), ex);
-			Thread.currentThread().interrupt();
-			throw new RuntimeException(reason, ex);
+		// Handle cloning repository errors.
+		// Error output example 1: 'ERROR: Repository not found.\nfatal: Could not read from remote repository.'
+		// Error output example 2: 'fatal: destination path 'REPOSITORY_NAME' already exists and is not an empty directory.'
+		String error = processResult.getStandardErrorOrThrow(RuntimeException::new);
+		log.debug(PROCESS_CODE_ERROR_EXIT.formatted(GIT_CLONE_PB.command().toString(), exitCode, error));
+
+		if (error.contains("Repository not found")) {
+			throw new RuntimeException(REPOSITORY_NOT_FOUND.formatted(REPO_URL));
+		}
+		if (error.contains("already exists")) {
+			log.debug(REPOSITORY_ALREADY_CLONED.formatted(REPO_URL));
 		}
 	}
 
