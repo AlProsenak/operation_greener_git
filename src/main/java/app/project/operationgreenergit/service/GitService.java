@@ -11,14 +11,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Paths;
 
-import static app.project.operationgreenergit.util.InputStreamUtil.readInputStream;
 import static app.project.operationgreenergit.util.MessageTemplate.EXCEPTION_CAUGHT;
 import static app.project.operationgreenergit.util.MessageTemplate.FILE_OPERATION_FAILED;
 import static app.project.operationgreenergit.util.MessageTemplate.GIT_VERSION;
 import static app.project.operationgreenergit.util.MessageTemplate.PROCESS_CODE_ERROR_EXIT;
 import static app.project.operationgreenergit.util.MessageTemplate.PROCESS_CODE_EXIT;
-import static app.project.operationgreenergit.util.MessageTemplate.PROCESS_INTERRUPTED;
-import static app.project.operationgreenergit.util.MessageTemplate.PROCESS_START_FAILED;
 import static app.project.operationgreenergit.util.MessageTemplate.REPOSITORY_ALREADY_CLONED;
 import static app.project.operationgreenergit.util.MessageTemplate.REPOSITORY_NOT_FOUND;
 import static app.project.operationgreenergit.util.ProcessExecutorUtil.executeHandledProcess;
