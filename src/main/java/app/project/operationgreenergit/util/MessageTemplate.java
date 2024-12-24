@@ -25,6 +25,6 @@ public final class MessageTemplate {
 	public static final String REPOSITORY_NOT_FOUND = "Repository: '%s' not found";
 	public static final String REPOSITORY_ALREADY_CLONED = "Repository: '%s' is already cloned";
 
-	public static final String NON_SUPPORTED_OS = "Service does not support operating system: %s";
+	public static final String NON_SUPPORTED_OS = "Service does not support operating system: '%s'";
 
 }

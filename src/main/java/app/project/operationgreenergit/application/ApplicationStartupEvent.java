@@ -6,6 +6,8 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import static app.project.operationgreenergit.util.MessageTemplate.NON_SUPPORTED_OS;
+import static app.project.operationgreenergit.util.SystemPropertyUtil.OS_NAME;
+import static app.project.operationgreenergit.util.SystemPropertyUtil.isSupportedOS;
 
 @Slf4j
 @Component
@@ -16,15 +18,9 @@ public class ApplicationStartupEvent {
 		if (isSupportedOS()) {
 			return;
 		}
-		String reason = NON_SUPPORTED_OS.formatted("'Windows'");
+		String reason = NON_SUPPORTED_OS.formatted(OS_NAME);
 		log.error("Service startup failed: %s".formatted(reason));
 		throw new RuntimeException(reason);
-	}
-
-	private static boolean isSupportedOS() {
-		String os = System.getProperty("os.name");
-		boolean isWindows = os.equalsIgnoreCase("windows");
-		return !isWindows;
 	}
 
 }
