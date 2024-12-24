@@ -1,7 +1,7 @@
 package app.project.operationgreenergit.service;
 
-import app.project.operationgreenergit.util.ProcessExecutor;
-import app.project.operationgreenergit.util.ProcessResult;
+import app.project.operationgreenergit.application.process.ProcessExecutor;
+import app.project.operationgreenergit.application.process.ProcessResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
