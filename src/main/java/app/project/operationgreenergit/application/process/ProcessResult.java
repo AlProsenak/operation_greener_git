@@ -4,10 +4,14 @@ import app.project.operationgreenergit.exception.ExceptionMessageSupplier;
 import lombok.Getter;
 import org.springframework.util.Assert;
 
+import java.util.Arrays;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 import static app.project.operationgreenergit.util.MessageTemplate.MUST_NOT_BE_NULL;
 import static app.project.operationgreenergit.util.MessageTemplate.NOT_FOUND;
+import static app.project.operationgreenergit.util.MessageTemplate.PROCESS_CODE_ERROR_EXIT;
+import static app.project.operationgreenergit.util.MessageTemplate.PROCESS_CODE_EXIT;
 
 
 @Getter
@@ -67,6 +71,15 @@ public class ProcessResult {
 		return getStandardOutput().orElseGet(() ->
 				getStandardError().orElseThrow(() ->
 						exceptionSupplier.get(NOT_FOUND.formatted("[standardOutput, standardError]"))));
+	}
+
+	public ProcessResult log(Consumer<String> logMethod) {
+		if (this.exitCode == 0) {
+			logMethod.accept(PROCESS_CODE_EXIT.formatted(Arrays.toString(this.command), this.exitCode));
+		} else {
+			logMethod.accept(PROCESS_CODE_ERROR_EXIT.formatted(Arrays.toString(this.command), this.exitCode, this.standardError));
+		}
+		return this;
 	}
 
 }

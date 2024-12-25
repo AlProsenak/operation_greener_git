@@ -1,7 +1,9 @@
 package app.project.operationgreenergit.service;
 
+import app.project.operationgreenergit.application.process.ProcessBuilderManager;
 import app.project.operationgreenergit.application.process.ProcessExecutor;
 import app.project.operationgreenergit.application.process.ProcessResult;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -10,23 +12,35 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.function.Function;
 
+import static app.project.operationgreenergit.util.CommandTemplate.GIT_ADD_ALL;
+import static app.project.operationgreenergit.util.CommandTemplate.GIT_BRANCH_CREATE;
+import static app.project.operationgreenergit.util.CommandTemplate.GIT_BRANCH_DELETE;
+import static app.project.operationgreenergit.util.CommandTemplate.GIT_BRANCH_SWITCH;
+import static app.project.operationgreenergit.util.CommandTemplate.GIT_CLONE;
+import static app.project.operationgreenergit.util.CommandTemplate.GIT_COMMIT;
+import static app.project.operationgreenergit.util.CommandTemplate.GIT_PUSH;
+import static app.project.operationgreenergit.util.CommandTemplate.GIT_VERSION;
+import static app.project.operationgreenergit.util.CommandTemplate.MAKE_DIR;
 import static app.project.operationgreenergit.util.MessageTemplate.EXCEPTION_CAUGHT;
 import static app.project.operationgreenergit.util.MessageTemplate.FILE_OPERATION_FAILED;
-import static app.project.operationgreenergit.util.MessageTemplate.GIT_VERSION;
-import static app.project.operationgreenergit.util.MessageTemplate.PROCESS_CODE_ERROR_EXIT;
+import static app.project.operationgreenergit.util.MessageTemplate.GIT_SYSTEM_VERSION;
 import static app.project.operationgreenergit.util.MessageTemplate.PROCESS_CODE_EXIT;
 import static app.project.operationgreenergit.util.MessageTemplate.REPOSITORY_ALREADY_CLONED;
 import static app.project.operationgreenergit.util.MessageTemplate.REPOSITORY_NOT_FOUND;
-import static app.project.operationgreenergit.util.ProcessExecutorUtil.executeHandledProcess;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class GitService {
+
+	private final ProcessBuilderManager processBuilderManager;
 
 	// Repository
 	private static final String REPO_NAME = "operation_greener_git";
 	private static final String REPO_URL = "https://github.com/AlProsenak/" + REPO_NAME + ".git";
+	private static final String ORIGIN = "origin";
 
 	// Branch
 	private static final String MAIN_BRANCH_NAME = "main";
@@ -40,73 +54,52 @@ public class GitService {
 	// File
 	private static final File WORK_FILE = new File(REPO_DIR + "/GREENER_GIT.md");
 
+	private static final String GIT_COMMIT_MESSAGE = "Update README.md";
+
 	// Process builder
 	// Example when command 'git' is not found.
 	// Exception output: 'Cannot run program "git": error=2, No such file or directory'.
-	private static final ProcessBuilder GIT_VERSION_PB = new ProcessBuilder()
-			.command("/bin/bash", "-c", "git --version");
-	private static final ProcessBuilder CACHE_DIR_GEN_PB = new ProcessBuilder()
-			.command("/bin/bash", "-c", "mkdir -p %s".formatted(CACHE_DIR));
-	private static final ProcessBuilder GIT_CLONE_PB = new ProcessBuilder()
-			.command("/bin/bash", "-c", "git clone %s".formatted(REPO_URL))
-			.directory(Paths.get(CACHE_DIR).toFile());
-	private static final ProcessBuilder GIT_MAIN_BRANCH_SWITCH_PB = new ProcessBuilder()
-			.command("/bin/bash", "-c", "git switch -f %s".formatted(MAIN_BRANCH_NAME))
-			.directory(Paths.get(REPO_DIR).toFile());
-	private static final ProcessBuilder GIT_WORK_BRANCH_CREATE_PB = new ProcessBuilder()
-			.command("/bin/bash", "-c", "git branch %s".formatted(WORK_BRANCH_NAME))
-			.directory(Paths.get(REPO_DIR).toFile());
-	private static final ProcessBuilder GIT_WORK_BRANCH_SWITCH_PB = new ProcessBuilder()
-			.command("/bin/bash", "-c", "git switch %s".formatted(WORK_BRANCH_NAME))
-			.directory(Paths.get(REPO_DIR).toFile());
-	private static final ProcessBuilder GIT_WORK_BRANCH_DELETE_PB = new ProcessBuilder()
-			.command("/bin/bash", "-c", "git branch -D %s".formatted(WORK_BRANCH_NAME))
-			.directory(Paths.get(REPO_DIR).toFile());
-	private static final ProcessBuilder GIT_ADD_ALL_PB = new ProcessBuilder()
-			.command("/bin/bash", "-c", "git add -A")
-			.directory(Paths.get(REPO_DIR).toFile());
-	private static final ProcessBuilder GIT_COMMIT_README_PB = new ProcessBuilder()
-			.command("/bin/bash", "-c", "git commit -m '%s'".formatted("Update README.md"))
-			.directory(Paths.get(REPO_DIR).toFile());
-	private static final ProcessBuilder GIT_PUSH_ORIGIN_WORK_PB = new ProcessBuilder()
-			.command("/bin/bash", "-c", "git push -f origin %s".formatted(WORK_BRANCH_NAME))
-			.directory(Paths.get(REPO_DIR).toFile());
+	private static final Function<ProcessBuilder, ProcessResult> IGNORE_OUTPUT_PB = pb -> new ProcessExecutor(pb)
+			.ignoreOutput()
+			.startHandled()
+			.log(log::debug);
 
 	public void generateCommitHistory() {
 		validateSystemGitVersion();
 
 		// Initialize cache directory.
-		executeHandledProcess(CACHE_DIR_GEN_PB, RuntimeException::new, RuntimeException::new);
+		makeDirectory();
+
 		// Clone project repository into cache.
 		cloneRepository();
 
 		// Switch to clean Git branch.
-		executeHandledProcess(GIT_MAIN_BRANCH_SWITCH_PB, RuntimeException::new, RuntimeException::new);
-		executeHandledProcess(GIT_WORK_BRANCH_DELETE_PB, RuntimeException::new, RuntimeException::new);
-		executeHandledProcess(GIT_WORK_BRANCH_CREATE_PB, RuntimeException::new, RuntimeException::new);
-		executeHandledProcess(GIT_WORK_BRANCH_SWITCH_PB, RuntimeException::new, RuntimeException::new);
+		switchToWorkBranch();
 
 		// Create and write to dummy file.
 		createFile();
 
 		// Create dummy commits.
-		executeHandledProcess(GIT_ADD_ALL_PB, RuntimeException::new, RuntimeException::new);
-		executeHandledProcess(GIT_COMMIT_README_PB, RuntimeException::new, RuntimeException::new);
+		createCommits();
 
 		// Push to remote branch.
-		executeHandledProcess(GIT_PUSH_ORIGIN_WORK_PB, RuntimeException::new, RuntimeException::new);
+		executeCommand(GIT_PUSH.formatted(ORIGIN, WORK_BRANCH_NAME), Paths.get(REPO_DIR).toFile(), IGNORE_OUTPUT_PB);
 	}
 
-	private static void validateSystemGitVersion() {
-		ProcessResult processResult = new ProcessExecutor(GIT_VERSION_PB)
+	private void validateSystemGitVersion() {
+		ProcessBuilder gitVersionPb = processBuilderManager
+				.createProcessBuilder(GIT_VERSION);
+
+		ProcessResult processResult = new ProcessExecutor(gitVersionPb)
 				.readOutput()
-				.startHandled();
+				.startHandled()
+				.log(log::debug);
 
 		String gitVersionOutput = processResult.getStandardOutputOrThrow(RuntimeException::new);
 		String gitVersion = parseGitVersion(gitVersionOutput);
 
-		log.debug(GIT_VERSION.formatted(gitVersion));
-		log.debug(PROCESS_CODE_EXIT.formatted(GIT_VERSION_PB.command().toString(), processResult.getExitCode()));
+		log.debug(GIT_SYSTEM_VERSION.formatted(gitVersion));
+		log.debug(PROCESS_CODE_EXIT.formatted(gitVersionPb.command().toString(), processResult.getExitCode()));
 	}
 
 	private static String parseGitVersion(String gitVersionOutput) {
@@ -116,28 +109,62 @@ public class GitService {
 		return gitParts[gitParts.length - 1];
 	}
 
-	private static void cloneRepository() {
-		ProcessResult processResult = new ProcessExecutor(GIT_CLONE_PB)
-				.startHandled();
+	private void makeDirectory() {
+		ProcessBuilder cacheGenPb = processBuilderManager
+				.createProcessBuilder(MAKE_DIR.formatted(CACHE_DIR));
 
-		int exitCode = processResult.getExitCode();
+		new ProcessExecutor(cacheGenPb)
+				.ignoreOutput()
+				.startHandled()
+				.log(log::debug);
+	}
+
+	private void cloneRepository() {
+		ProcessBuilder gitClonePb = processBuilderManager
+				.createProcessBuilder(GIT_CLONE.formatted(REPO_URL))
+				.directory(Paths.get(CACHE_DIR).toFile());
+
+		ProcessResult gitClonePr = new ProcessExecutor(gitClonePb)
+				.ignoreOutput()
+				.startHandled()
+				.log(log::debug);
+
+		int exitCode = gitClonePr.getExitCode();
 		if (exitCode == 0) {
-			log.debug(PROCESS_CODE_EXIT.formatted(GIT_CLONE_PB.command(), exitCode));
+			log.debug(PROCESS_CODE_EXIT.formatted(gitClonePr.getCommand(), exitCode));
 			return;
 		}
 
 		// Handle cloning repository errors.
 		// Error output example 1: 'ERROR: Repository not found.\nfatal: Could not read from remote repository.'
 		// Error output example 2: 'fatal: destination path 'REPOSITORY_NAME' already exists and is not an empty directory.'
-		String error = processResult.getStandardErrorOrThrow(RuntimeException::new);
-		log.debug(PROCESS_CODE_ERROR_EXIT.formatted(GIT_CLONE_PB.command().toString(), exitCode, error));
-
-		if (error.contains("Repository not found")) {
+		String standardError = gitClonePr.getStandardErrorOrThrow(RuntimeException::new);
+		if (standardError.contains("Repository not found")) {
 			throw new RuntimeException(REPOSITORY_NOT_FOUND.formatted(REPO_URL));
 		}
-		if (error.contains("already exists")) {
+		if (standardError.contains("already exists")) {
 			log.debug(REPOSITORY_ALREADY_CLONED.formatted(REPO_URL));
 		}
+	}
+
+	private ProcessResult executeCommand(
+			String command,
+			File directory,
+			Function<ProcessBuilder, ProcessResult> processBuilder) {
+		ProcessBuilder switchBranchPb = processBuilderManager
+				.createProcessBuilder(command)
+				.directory(directory);
+
+		return processBuilder.apply(switchBranchPb);
+	}
+
+	private void switchToWorkBranch() {
+		File repoDirectory = Paths.get(REPO_DIR).toFile();
+
+		executeCommand(GIT_BRANCH_SWITCH.formatted(MAIN_BRANCH_NAME), repoDirectory, IGNORE_OUTPUT_PB);
+		executeCommand(GIT_BRANCH_DELETE.formatted(WORK_BRANCH_NAME), repoDirectory, IGNORE_OUTPUT_PB);
+		executeCommand(GIT_BRANCH_CREATE.formatted(WORK_BRANCH_NAME), repoDirectory, IGNORE_OUTPUT_PB);
+		executeCommand(GIT_BRANCH_SWITCH.formatted(WORK_BRANCH_NAME), repoDirectory, IGNORE_OUTPUT_PB);
 	}
 
 	private static void createFile() {
@@ -161,6 +188,13 @@ public class GitService {
 			log.error(EXCEPTION_CAUGHT.formatted(reason), ex);
 			throw new RuntimeException(reason, ex);
 		}
+	}
+
+	private void createCommits() {
+		File repoDirectory = Paths.get(REPO_DIR).toFile();
+
+		executeCommand(GIT_ADD_ALL, repoDirectory, IGNORE_OUTPUT_PB);
+		executeCommand(GIT_COMMIT.formatted(GIT_COMMIT_MESSAGE), repoDirectory, IGNORE_OUTPUT_PB);
 	}
 
 }

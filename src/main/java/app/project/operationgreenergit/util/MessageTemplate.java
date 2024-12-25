@@ -11,7 +11,7 @@ public final class MessageTemplate {
 
 	public static final String FILE_OPERATION_FAILED = "Failed to operate on file: '%s'";
 
-	public static final String GIT_VERSION = "System Git version: '%s'";
+	public static final String GIT_SYSTEM_VERSION = "System Git version: '%s'";
 
 	public static final String MUST_NOT_BE_NULL = "'%s' must not be null";
 
