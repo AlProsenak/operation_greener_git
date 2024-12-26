@@ -6,6 +6,11 @@ public final class MessageTemplate {
 		throw new UnsupportedOperationException(EXCEPTION_UTILITY_CLASS.formatted(MessageTemplate.class.getName()));
 	}
 
+	/**
+	 * General placeholder rules:
+	 * Single Argument Placeholder: '%s' indicates a single argument to be inserted into the template.
+	 * Multiple Arguments Placeholder: %s indicates a list of arguments which are automatically formatted as [a, b, c].
+	 */
 	public static final String EXCEPTION_UTILITY_CLASS = "'%s' is a utility class and cannot be instantiated";
 	public static final String EXCEPTION_CAUGHT = "Exception caught: '%s'";
 
