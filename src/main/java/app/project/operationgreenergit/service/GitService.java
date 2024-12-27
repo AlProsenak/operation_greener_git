@@ -18,6 +18,7 @@ import static app.project.operationgreenergit.util.CommandTemplate.GIT_ADD_ALL;
 import static app.project.operationgreenergit.util.CommandTemplate.GIT_BRANCH_CREATE;
 import static app.project.operationgreenergit.util.CommandTemplate.GIT_BRANCH_DELETE;
 import static app.project.operationgreenergit.util.CommandTemplate.GIT_BRANCH_SWITCH;
+import static app.project.operationgreenergit.util.CommandTemplate.GIT_CLEAN;
 import static app.project.operationgreenergit.util.CommandTemplate.GIT_CLONE;
 import static app.project.operationgreenergit.util.CommandTemplate.GIT_COMMIT;
 import static app.project.operationgreenergit.util.CommandTemplate.GIT_PUSH;
@@ -162,6 +163,7 @@ public class GitService {
 		File repoDirectory = Paths.get(REPO_DIR).toFile();
 
 		executeCommand(GIT_BRANCH_SWITCH.formatted(MAIN_BRANCH_NAME), repoDirectory, IGNORE_OUTPUT_PB);
+		executeCommand(GIT_CLEAN, repoDirectory, IGNORE_OUTPUT_PB);
 		executeCommand(GIT_BRANCH_DELETE.formatted(WORK_BRANCH_NAME), repoDirectory, IGNORE_OUTPUT_PB);
 		executeCommand(GIT_BRANCH_CREATE.formatted(WORK_BRANCH_NAME), repoDirectory, IGNORE_OUTPUT_PB);
 		executeCommand(GIT_BRANCH_SWITCH.formatted(WORK_BRANCH_NAME), repoDirectory, IGNORE_OUTPUT_PB);
