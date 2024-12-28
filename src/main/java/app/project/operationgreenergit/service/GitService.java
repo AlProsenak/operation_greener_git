@@ -17,6 +17,7 @@ import java.util.function.Function;
 import static app.project.operationgreenergit.util.CommandTemplate.GIT_ADD_ALL;
 import static app.project.operationgreenergit.util.CommandTemplate.GIT_BRANCH_CREATE;
 import static app.project.operationgreenergit.util.CommandTemplate.GIT_BRANCH_DELETE;
+import static app.project.operationgreenergit.util.CommandTemplate.GIT_BRANCH_RECREATE;
 import static app.project.operationgreenergit.util.CommandTemplate.GIT_BRANCH_SWITCH;
 import static app.project.operationgreenergit.util.CommandTemplate.GIT_CLEAN;
 import static app.project.operationgreenergit.util.CommandTemplate.GIT_CLONE;
@@ -164,8 +165,7 @@ public class GitService {
 
 		executeCommand(GIT_BRANCH_SWITCH.formatted(MAIN_BRANCH_NAME), repoDirectory, IGNORE_OUTPUT_PB);
 		executeCommand(GIT_CLEAN, repoDirectory, IGNORE_OUTPUT_PB);
-		executeCommand(GIT_BRANCH_DELETE.formatted(WORK_BRANCH_NAME), repoDirectory, IGNORE_OUTPUT_PB);
-		executeCommand(GIT_BRANCH_CREATE.formatted(WORK_BRANCH_NAME), repoDirectory, IGNORE_OUTPUT_PB);
+		executeCommand(GIT_BRANCH_RECREATE.formatted(WORK_BRANCH_NAME, WORK_BRANCH_NAME), repoDirectory, IGNORE_OUTPUT_PB);
 		executeCommand(GIT_BRANCH_SWITCH.formatted(WORK_BRANCH_NAME), repoDirectory, IGNORE_OUTPUT_PB);
 	}
 
