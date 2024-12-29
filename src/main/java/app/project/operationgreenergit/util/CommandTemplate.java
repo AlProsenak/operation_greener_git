@@ -8,7 +8,9 @@ public final class CommandTemplate {
 		throw new UnsupportedOperationException(EXCEPTION_UTILITY_CLASS.formatted(CommandTemplate.class.getName()));
 	}
 
+	private static final String AND = " && ";
 	private static final String END = "; ";
+	private static final String OR = " || ";
 
 	public static final String GIT_ADD_ALL = "git add -A";
 	public static final String GIT_BRANCH_CREATE = "git branch %s";
@@ -23,5 +25,6 @@ public final class CommandTemplate {
 	public static final String MAKE_DIR = "mkdir -p %s";
 
 	public static final String GIT_BRANCH_RECREATE = GIT_BRANCH_DELETE + END + GIT_BRANCH_CREATE;
+	public static final String GIT_BRANCH_SWITCH_TO_RECREATED = GIT_BRANCH_RECREATE + AND + GIT_BRANCH_SWITCH;
 
 }

@@ -19,6 +19,7 @@ import static app.project.operationgreenergit.util.CommandTemplate.GIT_BRANCH_CR
 import static app.project.operationgreenergit.util.CommandTemplate.GIT_BRANCH_DELETE;
 import static app.project.operationgreenergit.util.CommandTemplate.GIT_BRANCH_RECREATE;
 import static app.project.operationgreenergit.util.CommandTemplate.GIT_BRANCH_SWITCH;
+import static app.project.operationgreenergit.util.CommandTemplate.GIT_BRANCH_SWITCH_TO_RECREATED;
 import static app.project.operationgreenergit.util.CommandTemplate.GIT_CLEAN;
 import static app.project.operationgreenergit.util.CommandTemplate.GIT_CLONE;
 import static app.project.operationgreenergit.util.CommandTemplate.GIT_COMMIT;
@@ -165,8 +166,8 @@ public class GitService {
 
 		executeCommand(GIT_BRANCH_SWITCH.formatted(MAIN_BRANCH_NAME), repoDirectory, IGNORE_OUTPUT_PB);
 		executeCommand(GIT_CLEAN, repoDirectory, IGNORE_OUTPUT_PB);
-		executeCommand(GIT_BRANCH_RECREATE.formatted(WORK_BRANCH_NAME, WORK_BRANCH_NAME), repoDirectory, IGNORE_OUTPUT_PB);
-		executeCommand(GIT_BRANCH_SWITCH.formatted(WORK_BRANCH_NAME), repoDirectory, IGNORE_OUTPUT_PB);
+		executeCommand(GIT_BRANCH_SWITCH_TO_RECREATED
+				.formatted(WORK_BRANCH_NAME, WORK_BRANCH_NAME, WORK_BRANCH_NAME), repoDirectory, IGNORE_OUTPUT_PB);
 	}
 
 	private static void createFile() {
