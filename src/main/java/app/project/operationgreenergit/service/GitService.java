@@ -15,9 +15,6 @@ import java.nio.file.Paths;
 import java.util.function.Function;
 
 import static app.project.operationgreenergit.util.CommandTemplate.GIT_ADD_ALL;
-import static app.project.operationgreenergit.util.CommandTemplate.GIT_BRANCH_CREATE;
-import static app.project.operationgreenergit.util.CommandTemplate.GIT_BRANCH_DELETE;
-import static app.project.operationgreenergit.util.CommandTemplate.GIT_BRANCH_RECREATE;
 import static app.project.operationgreenergit.util.CommandTemplate.GIT_BRANCH_SWITCH;
 import static app.project.operationgreenergit.util.CommandTemplate.GIT_BRANCH_SWITCH_TO_RECREATED;
 import static app.project.operationgreenergit.util.CommandTemplate.GIT_CLEAN;
