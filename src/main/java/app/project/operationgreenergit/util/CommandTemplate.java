@@ -19,6 +19,8 @@ public final class CommandTemplate {
 	public static final String GIT_CLEAN = "git clean -f";
 	public static final String GIT_CLONE = "git clone %s";
 	public static final String GIT_COMMIT = "git commit -m \"%s\"";
+	public static final String GIT_FETCH = "git fetch %s %s";
+	public static final String GIT_PULL = "git pull %s %s";
 	public static final String GIT_PUSH = "git push -f %s %s";
 	public static final String GIT_VERSION = "git --version";
 
@@ -26,5 +28,6 @@ public final class CommandTemplate {
 
 	public static final String GIT_BRANCH_RECREATE = GIT_BRANCH_DELETE + END + GIT_BRANCH_CREATE;
 	public static final String GIT_BRANCH_SWITCH_TO_RECREATED = GIT_BRANCH_RECREATE + AND + GIT_BRANCH_SWITCH;
+	public static final String GIT_FETCH_PULL = GIT_FETCH + AND + GIT_PULL;
 
 }

@@ -20,6 +20,7 @@ import static app.project.operationgreenergit.util.CommandTemplate.GIT_BRANCH_SW
 import static app.project.operationgreenergit.util.CommandTemplate.GIT_CLEAN;
 import static app.project.operationgreenergit.util.CommandTemplate.GIT_CLONE;
 import static app.project.operationgreenergit.util.CommandTemplate.GIT_COMMIT;
+import static app.project.operationgreenergit.util.CommandTemplate.GIT_FETCH_PULL;
 import static app.project.operationgreenergit.util.CommandTemplate.GIT_PUSH;
 import static app.project.operationgreenergit.util.CommandTemplate.GIT_VERSION;
 import static app.project.operationgreenergit.util.CommandTemplate.MAKE_DIR;
@@ -163,6 +164,8 @@ public class GitService {
 
 		executeCommand(GIT_BRANCH_SWITCH.formatted(MAIN_BRANCH_NAME), repoDirectory, IGNORE_OUTPUT_PB);
 		executeCommand(GIT_CLEAN, repoDirectory, IGNORE_OUTPUT_PB);
+		executeCommand(GIT_FETCH_PULL
+				.formatted(ORIGIN, MAIN_BRANCH_NAME, ORIGIN, MAIN_BRANCH_NAME), repoDirectory, IGNORE_OUTPUT_PB);
 		executeCommand(GIT_BRANCH_SWITCH_TO_RECREATED
 				.formatted(WORK_BRANCH_NAME, WORK_BRANCH_NAME, WORK_BRANCH_NAME), repoDirectory, IGNORE_OUTPUT_PB);
 	}
