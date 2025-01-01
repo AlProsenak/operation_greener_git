@@ -18,16 +18,13 @@ public class ProcessExecutor {
 
 	private final ProcessBuilder processBuilder;
 
-	private boolean readOutput;
-	private ExceptionSupplier<?> ioExceptionSupplier;
-	private ExceptionSupplier<?> interruptedExceptionSupplier;
+	private boolean readOutput = false;
+	private ExceptionSupplier<?> ioExceptionSupplier = RuntimeException::new;
+	private ExceptionSupplier<?> interruptedExceptionSupplier = RuntimeException::new;
 
 	public ProcessExecutor(ProcessBuilder processBuilder) {
 		Assert.notNull(processBuilder, MUST_NOT_BE_NULL.formatted("processBuilder"));
 
-		this.readOutput = false;
-		this.ioExceptionSupplier = RuntimeException::new;
-		this.interruptedExceptionSupplier = RuntimeException::new;
 		this.processBuilder = processBuilder;
 	}
 
@@ -75,7 +72,7 @@ public class ProcessExecutor {
 		String[] command = this.processBuilder.command().toArray(String[]::new);
 
 		String output = null;
-		if (readOutput) {
+		if (this.readOutput) {
 			output = readInputStream(process.getInputStream());
 		}
 
