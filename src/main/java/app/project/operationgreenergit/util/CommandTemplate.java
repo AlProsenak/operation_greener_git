@@ -22,6 +22,7 @@ public final class CommandTemplate {
 	public static final String GIT_FETCH = "git fetch %s %s";
 	public static final String GIT_PULL = "git pull %s %s";
 	public static final String GIT_PUSH = "git push -f %s %s";
+	public static final String GIT_RESET = "git reset --hard %s";
 	public static final String GIT_VERSION = "git --version";
 
 	public static final String MAKE_DIR = "mkdir -p %s";
