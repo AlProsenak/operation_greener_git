@@ -15,13 +15,17 @@ public class ProcessBuilderManager {
 	private final String shell;
 	private final String shellArgument;
 
-	public ProcessBuilderManager() {
+	private ProcessBuilderManager() {
 		if (isLinux() || isMacOS()) {
 			this.shell = "/bin/bash";
 			this.shellArgument = "-c";
 		} else {
 			throw new UnsupportedOperationException(NON_SUPPORTED_OS.formatted(OS_NAME));
 		}
+	}
+
+	public static ProcessBuilderManager getInstance() {
+		return new ProcessBuilderManager();
 	}
 
 	public ProcessBuilder createProcessBuilder(String command) {

@@ -61,7 +61,7 @@ public class GitService {
 	// Process builder
 	// Example when command 'git' is not found.
 	// Exception output: 'Cannot run program "git": error=2, No such file or directory'.
-	private static final Function<ProcessBuilder, ProcessResult> IGNORE_OUTPUT_PB = pb -> new ProcessExecutor(pb)
+	private static final Function<ProcessBuilder, ProcessResult> IGNORE_OUTPUT_PB = pb -> ProcessExecutor.getInstance(pb)
 			.ignoreOutput()
 			.startHandled()
 			.log(log::debug);
@@ -92,7 +92,7 @@ public class GitService {
 		ProcessBuilder gitVersionPb = processBuilderManager
 				.createProcessBuilder(GIT_VERSION);
 
-		ProcessResult processResult = new ProcessExecutor(gitVersionPb)
+		ProcessResult processResult = ProcessExecutor.getInstance(gitVersionPb)
 				.readOutput()
 				.startHandled()
 				.log(log::debug);
@@ -115,7 +115,7 @@ public class GitService {
 		ProcessBuilder cacheGenPb = processBuilderManager
 				.createProcessBuilder(MAKE_DIR.formatted(CACHE_DIR));
 
-		new ProcessExecutor(cacheGenPb)
+		ProcessExecutor.getInstance(cacheGenPb)
 				.ignoreOutput()
 				.startHandled()
 				.log(log::debug);
@@ -126,7 +126,7 @@ public class GitService {
 				.createProcessBuilder(GIT_CLONE.formatted(REPO_URL))
 				.directory(Paths.get(CACHE_DIR).toFile());
 
-		ProcessResult gitClonePr = new ProcessExecutor(gitClonePb)
+		ProcessResult gitClonePr = ProcessExecutor.getInstance(gitClonePb)
 				.ignoreOutput()
 				.startHandled()
 				.log(log::debug);

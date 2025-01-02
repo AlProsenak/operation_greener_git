@@ -22,10 +22,14 @@ public class ProcessExecutor {
 	private ExceptionSupplier<?> ioExceptionSupplier = RuntimeException::new;
 	private ExceptionSupplier<?> interruptedExceptionSupplier = RuntimeException::new;
 
-	public ProcessExecutor(ProcessBuilder processBuilder) {
+	private ProcessExecutor(ProcessBuilder processBuilder) {
 		Assert.notNull(processBuilder, MUST_NOT_BE_NULL.formatted("processBuilder"));
 
 		this.processBuilder = processBuilder;
+	}
+
+	public static ProcessExecutor getInstance(ProcessBuilder processBuilder) {
+		return new ProcessExecutor(processBuilder);
 	}
 
 	public List<String> command() {
