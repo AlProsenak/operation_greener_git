@@ -66,6 +66,11 @@ public class GitService {
 			.startHandled()
 			.log(log::debug);
 
+	private static final Function<ProcessBuilder, ProcessResult> READ_OUTPUT_PB = pb -> ProcessExecutor.getInstance(pb)
+			.readOutput()
+			.startHandled()
+			.log(log::debug);
+
 	public void generateCommitHistory() {
 		validateSystemGitVersion();
 
@@ -169,6 +174,22 @@ public class GitService {
 		ProcessResult pullProcessResult = executeCommand(GIT_FETCH_PULL
 				.formatted(ORIGIN, MAIN_BRANCH_NAME, ORIGIN, MAIN_BRANCH_NAME), repoDirectory, IGNORE_OUTPUT_PB);
 
+		var pb = processBuilderManager
+				.createProcessBuilder("")
+				.directory(repoDirectory);
+
+		ProcessExecutor.getInstance(pb)
+				.ignoreOutput()
+				.startHandled()
+				.log(log::debug);
+
+		var test = IGNORE_OUTPUT_PB.apply(processBuilderManager
+				.createProcessBuilder("")
+				.directory(repoDirectory));
+
+		// TODO: alternative command execution
+		//  method for specifying condition for execution
+
 		if (pullProcessResult.getExitCode() != 0
 				&& pullProcessResult
 				.getStandardErrorOrThrow(RuntimeException::new)
@@ -209,6 +230,17 @@ public class GitService {
 
 		executeCommand(GIT_ADD_ALL, repoDirectory, IGNORE_OUTPUT_PB);
 		executeCommand(GIT_COMMIT.formatted(GIT_COMMIT_MESSAGE), repoDirectory, IGNORE_OUTPUT_PB);
+
+		var pb = processBuilderManager.createProcessBuilder("pwd");
+		var pr = READ_OUTPUT_PB.apply(pb);
+
+		log.info(pr.getAnyOutputOrThrow(RuntimeException::new));
+
+		var p = Paths.get(pr.getAnyOutputOrThrow(RuntimeException::new));
+
+
+
+//		executeCommand()
 	}
 
 }

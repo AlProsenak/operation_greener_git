@@ -82,4 +82,13 @@ public class ProcessResult {
 		return this;
 	}
 
+	// TODO: config like logSuccessExitLevel && logErrorExitLevel
+	// TODO: after that, add enum with log levels - safer that Consumer approach
+	public ProcessResult throwOnErrorExitCode(ExceptionMessageSupplier<?> exceptionSupplier) {
+		if (this.exitCode != 0) {
+			throw exceptionSupplier.get(PROCESS_CODE_EXIT.formatted(Arrays.toString(this.command), this.exitCode));
+		}
+		return this;
+	}
+
 }

@@ -85,6 +85,16 @@ public class ProcessExecutor {
 			error = readInputStream(process.getErrorStream());
 		}
 
+		// TODO: logging here
+		//  depending on exitCode do log level
+		if (exitCode == 0) {
+			log.info("");
+		} else {
+			log.error("");
+		}
+
+		// TODO: alternative command here
+
 		return new ProcessResult(command, exitCode, output, error);
 	}
 

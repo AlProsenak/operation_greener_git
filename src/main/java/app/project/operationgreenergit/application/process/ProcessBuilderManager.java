@@ -3,6 +3,8 @@ package app.project.operationgreenergit.application.process;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
+import java.io.File;
+
 import static app.project.operationgreenergit.util.MessageTemplate.MUST_NOT_BE_NULL;
 import static app.project.operationgreenergit.util.MessageTemplate.NON_SUPPORTED_OS;
 import static app.project.operationgreenergit.util.SystemPropertyUtil.OS_NAME;
@@ -32,6 +34,10 @@ public class ProcessBuilderManager {
 		Assert.notNull(command, MUST_NOT_BE_NULL.formatted("command"));
 		// TODO: command validation and sanitization
 		return new ProcessBuilder(this.shell, this.shellArgument, command);
+	}
+
+	public ProcessBuilder createScriptPB(File path) {
+		return new ProcessBuilder(this.shell, "");
 	}
 
 }
